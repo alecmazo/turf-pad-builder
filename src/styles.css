@@ -433,6 +433,103 @@
   animation-delay: 0.8s !important;
 }
 
+/* ── Material pick-to-locate ─────────────────────────────────────── */
+.mat-region {
+  transition:
+    opacity 0.22s ease,
+    filter 0.22s ease;
+}
+
+.mat-dim {
+  opacity: 0.18 !important;
+  filter: grayscale(0.45);
+}
+
+.mat-hl {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 2px var(--color-accent))
+    drop-shadow(0 0 7px rgba(196, 92, 38, 0.65));
+  animation: mat-pulse 1.35s ease-in-out infinite;
+}
+
+@keyframes mat-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px var(--color-accent))
+      drop-shadow(0 0 5px rgba(196, 92, 38, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 4px var(--color-accent))
+      drop-shadow(0 0 12px rgba(196, 92, 38, 0.85));
+  }
+}
+
+/* Freeze on finished frame when a material is selected */
+.anim-end .anim-draw,
+.anim-end .anim-pop,
+.anim-end .anim-fade-in,
+.anim-end .anim-cut,
+.anim-end .anim-fill,
+.anim-end .anim-rise,
+.anim-end .anim-block-1,
+.anim-end .anim-block-2,
+.anim-end .anim-block-3,
+.anim-end .anim-block-4,
+.anim-end .anim-grid-1,
+.anim-end .anim-grid-2,
+.anim-end .anim-layer-1,
+.anim-end .anim-layer-2,
+.anim-end .anim-layer-3,
+.anim-end .anim-layer-4,
+.anim-end .anim-compactor,
+.anim-end .anim-post-1,
+.anim-end .anim-post-2,
+.anim-end .anim-post-3,
+.anim-end .anim-rail-1,
+.anim-end .anim-rail-2,
+.anim-end .anim-trex-1,
+.anim-end .anim-trex-2,
+.anim-end .anim-trex-3,
+.anim-end .anim-turf-roll,
+.anim-end .anim-roll-cyl,
+.anim-end .anim-spikes,
+.anim-end .anim-infill,
+.anim-end .anim-drip circle {
+  animation: none !important;
+  opacity: 1 !important;
+  stroke-dashoffset: 0 !important;
+  clip-path: none !important;
+  transform: none !important;
+}
+
+.anim-end .anim-cut {
+  opacity: 0.22 !important;
+}
+.anim-end .anim-fill {
+  opacity: 0.75 !important;
+}
+.anim-end .anim-turf-roll {
+  clip-path: inset(0 0% 0 0) !important;
+}
+.anim-end .anim-roll-cyl {
+  transform: translateX(300px) !important;
+}
+
+/* Keep highlight pulse when animations are frozen */
+.anim-end .mat-hl {
+  animation: mat-pulse 1.35s ease-in-out infinite !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+.anim-end .mat-dim {
+  opacity: 0.18 !important;
+}
+
+.anim-end animateMotion {
+  display: none;
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -475,5 +572,10 @@
     stroke-dashoffset: 0 !important;
     clip-path: none !important;
     transform: none !important;
+  }
+
+  .mat-hl {
+    animation: none !important;
+    filter: drop-shadow(0 0 6px var(--color-accent));
   }
 }

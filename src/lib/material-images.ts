@@ -38,6 +38,35 @@ export const MATERIAL_IMAGES: Record<string, string> = {
   default: m("class2"),
 };
 
+/** Short labels for build-step material chips. */
+export const MATERIAL_LABELS: Record<string, string> = {
+  "cut-fill": "Cut & fill soil",
+  srw: "SRW blocks",
+  caps: "Cap blocks",
+  geogrid: "Geogrid",
+  "level-pad": "Leveling pad",
+  "drain-rock": "Drain rock",
+  filter: "Filter fabric",
+  perf: "Perf pipe",
+  solid: "Solid outlet",
+  fittings: "Fittings",
+  geo: "Geotextile",
+  class2: "Class II base",
+  bedding: "DG bedding",
+  turf: "Turf",
+  infill: "Sand infill",
+  spikes: "Turf spikes",
+  seam: "Seam tape",
+  beams: "PT posts & rails",
+  trex: "Trex boards",
+  hardware: "Fasteners",
+  compactor: "Plate compactor",
+  level: "Laser level",
+  broom: "Power broom",
+  "tools-buy": "Hand tools",
+  delivery: "Delivery",
+};
+
 /** Materials featured in each build phase animation. */
 export const PHASE_MATERIALS: Record<number, string[]> = {
   1: ["class2", "srw", "perf", "turf"],
