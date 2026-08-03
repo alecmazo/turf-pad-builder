@@ -2,6 +2,7 @@
  * Turf pad / futsal terrace calculator.
  * Spec baseline: 13 ft deep × 24 ft wide, ~6 ft grade drop (cut 3 / fill 3).
  * Cut soil from the uphill wedge becomes fill on the downhill wedge — balanced.
+ * Project site: San Rafael, CA 94901 (North Bay yards OK for materials).
  */
 
 export type Mode = "diy" | "pro";
@@ -84,45 +85,47 @@ export const SITE = {
   defaultDepth: 13,
   defaultGrade: 6,
   defaultSideboardIn: 6,
+  city: "San Rafael",
+  zip: "94901",
+  county: "Marin",
 } as const;
 
 /**
- * DIY material unit costs — Bay Area / NorCal retail 2025–26 blended averages.
- * Sources: Home Depot / local yards, CA turf DIY guides, SRW retail, Trex Enhance.
+ * DIY material unit costs — North Bay (Marin / Sonoma) retail 2025–26 blended.
+ * Prefer bulk yards for rock; big-box for pipe / Trex / fabric.
  */
 export const UNIT_COSTS = {
-  srwBlock: 5.5, // ~1 sq ft face block
+  srwBlock: 5.5,
   capBlock: 6.5,
   geogridPerSqFt: 0.55,
-  levelingPadCuYd: 72, // Class II delivered
-  drainageRockCuYd: 78, // ¾" clean
+  levelingPadCuYd: 68,
+  drainageRockCuYd: 72,
   filterFabricSqFt: 0.32,
-  perfPipeLf: 1.35,
-  solidPipeLf: 1.55,
-  fittings: 45, // tees, couplings, outlets
+  perfPipeLf: 1.1,
+  solidPipeLf: 1.4,
+  fittings: 45,
   geotextileSqFt: 0.28,
-  classIiCuYd: 65,
-  beddingCuYd: 58, // DG / sharp sand
-  turfSqFt: 3.75, // recreational PET turf materials
-  infillPerLb: 0.22, // silica / coated sand
-  spikesBox: 28, // ~250 spikes
+  classIiCuYd: 62,
+  beddingCuYd: 55,
+  turfSqFt: 3.5,
+  infillPerLb: 0.22,
+  spikesBox: 28,
   seamTapeKit: 42,
-  trexLf: 6.25, // Enhance Basics ~ per linear ft of board
+  trexLf: 6.25,
   pt4x4Lf: 4.8,
   pt2x6Lf: 2.9,
-  hardwareKit: 65, // lag screws, adhesive, concrete anchors
+  hardwareKit: 65,
   plateCompactorDay: 85,
   jumpingJackDay: 95,
   laserLevelDay: 55,
-  wheelbarrow: 45, // buy
+  wheelbarrow: 45,
   turfKnife: 22,
   powerBroomDay: 45,
-  helperDay: 280, // optional day labor
-  // Pro labor multipliers applied in calc for walls + turf install
-  proWallPerFaceSqFt: 28, // installed SRW under 4 ft, materials+labor blended add
-  proTurfInstallSqFt: 6.5, // labor only on top of materials
-  proEarthworkCuYd: 85, // machine grade / compact
-  deliveryFlat: 185,
+  helperDay: 280,
+  proWallPerFaceSqFt: 30,
+  proTurfInstallSqFt: 7,
+  proEarthworkCuYd: 95,
+  deliveryFlat: 175,
 } as const;
 
 function round(n: number, d = 1) {
@@ -146,65 +149,50 @@ export function calcPad(input: PadInputs): PadResult {
 
   const areaSqFt = widthFt * depthFt;
 
-  // Balanced cut/fill wedges: 0 at centerline, max at edges.
-  // Each wedge depth = depth/2, height = gradeDrop/2.
   const wallHeightFt = gradeDropFt / 2;
   const wedgeDepth = depthFt / 2;
   const cutCuYd = round((0.5 * wallHeightFt * wedgeDepth * widthFt) / 27, 1);
   const fillCuYd = cutCuYd;
   const netImportCuYd = 0;
 
-  // Walls: 3 ft exposed + ~10% embed → face height ≈ wallHeight + 0.5
   const faceHeight = wallHeightFt + 0.5;
   const wallFaceSqFtOne = widthFt * faceHeight;
   const wallFaceSqFt = wallFaceSqFtOne * 2;
-  const srwBlocks = Math.ceil(wallFaceSqFt); // ~1 sq ft/block
-  const capBlocks = Math.ceil((widthFt * 2) / 1.5); // ~16" caps
+  const srwBlocks = Math.ceil(wallFaceSqFt);
+  const capBlocks = Math.ceil((widthFt * 2) / 1.5);
 
-  // Geogrid: front (fill) wall only — 2 layers × ~5 ft deep × width
   const geogridDepth = Math.min(5, depthFt * 0.4);
   const geogridSqFt = round(2 * geogridDepth * widthFt, 0);
 
-  // Leveling pads under both walls: 6" × 24" × length
   const levelingPadCuYd = round((2 * (0.5 * 2 * widthFt)) / 27, 2);
 
-  // Drainage chimneys: 12" thick × full face height × width, both walls
-  const drainageRockCuYd = round(
-    (2 * (1 * faceHeight * widthFt)) / 27,
-    1,
-  );
+  const drainageRockCuYd = round((2 * (1 * faceHeight * widthFt)) / 27, 1);
 
   const filterFabricSqFt = round(2 * (faceHeight + 2) * (widthFt + 2), 0);
 
-  // Perforated runs along both walls + solid outlet down left side
-  const perforatedPipeLf = round(widthFt * 2 + 4, 0); // + stub fittings
-  const solidOutletLf = round(depthFt + wallHeightFt + 8, 0); // daylights below
+  const perforatedPipeLf = round(widthFt * 2 + 4, 0);
+  const solidOutletLf = round(depthFt + wallHeightFt + 8, 0);
 
-  // Turf base over pad
-  const classIiCuYd = round((areaSqFt * (4 / 12)) / 27 * 1.15, 1); // 4" + compact
+  const classIiCuYd = round((areaSqFt * (4 / 12)) / 27 * 1.15, 1);
   const beddingCuYd = round((areaSqFt * (1 / 12)) / 27 * 1.1, 1);
   const geotextileSqFt = round(areaSqFt * 1.15, 0);
 
-  // Turf: 15 ft rolls preferred when depth ≤ 15; else seam
   const turfRollWidth = depthFt <= 15 ? 15 : Math.ceil(depthFt / 5) * 5;
   const turfSqFt = round(Math.max(areaSqFt * 1.13, turfRollWidth * widthFt), 0);
   const infillLb = round(areaSqFt * 1.5, 0);
 
   const perimeterLf = round(2 * (widthFt + depthFt), 1);
 
-  // Trex sideboards: all 4 sides, stacked courses if tall
   const courses = Math.max(1, Math.ceil(sideboardHeightIn / 5.5));
   const trexLf = round(perimeterLf * courses * 1.08, 0);
-  // Structural: PT posts every 4 ft + top/bottom rails
   const posts = Math.ceil(perimeterLf / 4);
   const beamLf = round(posts * (wallHeightFt + 1) + perimeterLf * 2, 0);
 
-  const pitchPct = 1.25; // mid of 1–1.5% toward front collector
+  const pitchPct = 1.25;
   const fallInches = round(depthFt * 12 * (pitchPct / 100), 1);
 
   const items: LineItem[] = [];
 
-  // Earthwork
   items.push(
     line({
       id: "cut-fill",
@@ -230,7 +218,6 @@ export function calcPad(input: PadInputs): PadResult {
     );
   }
 
-  // Walls
   items.push(
     line({
       id: "srw",
@@ -283,12 +270,11 @@ export function calcPad(input: PadInputs): PadResult {
         qty: wallFaceSqFt,
         unit: "sq ft face",
         unitCost: UNIT_COSTS.proWallPerFaceSqFt,
-        notes: "Under 4 ft SRW, CA rates",
+        notes: "Under 4 ft SRW, North Bay rates",
       }),
     );
   }
 
-  // Drainage
   items.push(
     line({
       id: "drain-rock",
@@ -343,7 +329,6 @@ export function calcPad(input: PadInputs): PadResult {
     }),
   );
 
-  // Base
   items.push(
     line({
       id: "geo",
@@ -376,7 +361,6 @@ export function calcPad(input: PadInputs): PadResult {
     }),
   );
 
-  // Turf
   items.push(
     line({
       id: "turf",
@@ -417,7 +401,10 @@ export function calcPad(input: PadInputs): PadResult {
       qty: depthFt > 15 ? 1 : 0,
       unit: "kit",
       unitCost: UNIT_COSTS.seamTapeKit,
-      notes: depthFt > 15 ? "Depth needs a seam" : "Not needed if single roll covers depth",
+      notes:
+        depthFt > 15
+          ? "Depth needs a seam"
+          : "Not needed if single roll covers depth",
       optional: depthFt <= 15,
     }),
   );
@@ -434,7 +421,6 @@ export function calcPad(input: PadInputs): PadResult {
     );
   }
 
-  // Sideboards — Trex on PT frame
   items.push(
     line({
       id: "beams",
@@ -468,7 +454,6 @@ export function calcPad(input: PadInputs): PadResult {
     }),
   );
 
-  // Tools / rentals (DIY)
   if (mode === "diy") {
     items.push(
       line({
@@ -536,7 +521,6 @@ export function calcPad(input: PadInputs): PadResult {
     }),
   );
 
-  // Filter zero-qty optional
   const active = items.filter((i) => i.qty > 0);
   const subtotal = round(
     active.reduce((s, i) => s + i.total, 0),
@@ -554,7 +538,7 @@ export function calcPad(input: PadInputs): PadResult {
   }
   if (wallHeightFt > 3.5) {
     warnings.push(
-      "Wall face over ~3.5 ft may trigger engineering / permits in CA — check Santa Rosa / Sonoma County building dept.",
+      "Wall face over ~3.5 ft may trigger engineering / permits in CA — check City of San Rafael Building Division.",
     );
   }
   if (wallHeightFt >= 4) {
@@ -629,10 +613,10 @@ export const BUILD_PHASES = [
     id: 1,
     title: "Before you dig",
     steps: [
-      "Call 811 / DigAlert for utility locate",
-      "Confirm with Santa Rosa / Sonoma County building dept (fill wall + hillside + pool proximity)",
+      "Call 811 / DigAlert to locate utilities",
+      "Confirm with City of San Rafael Building Division (fill wall + hillside + pool proximity)",
       "Stake pad corners; set string lines for grade",
-      "Order aggregates, SRW, pipe, fabric, Trex, turf",
+      "Order aggregates (A&S San Rafael or North Bay Materials), SRW, pipe, fabric, Trex, turf",
     ],
   },
   {

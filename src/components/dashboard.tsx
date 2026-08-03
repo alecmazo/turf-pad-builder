@@ -5,11 +5,15 @@ import {
   CheckCircle2,
   CircleDollarSign,
   ClipboardList,
+  ExternalLink,
   Layers,
+  MapPin,
   Maximize2,
   Ruler,
+  ShoppingCart,
   Shovel,
   Sparkles,
+  Star,
 } from "lucide-react";
 import {
   Bar,
@@ -30,6 +34,12 @@ import {
   type LineItem,
   type Mode,
 } from "@/lib/pad-calc";
+import {
+  LOCAL_YARDS,
+  SUPPLIER_GROUPS,
+  getBestOption,
+  getSuppliersForItem,
+} from "@/lib/suppliers";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -110,6 +120,40 @@ function DimSlider({
   );
 }
 
+function BuyLinks({ itemId }: { itemId: string }) {
+  const group = getSuppliersForItem(itemId);
+  if (!group) return null;
+  return (
+    <div className="mt-1.5 space-y-1">
+      {group.options.slice(0, 3).map((opt) => (
+        <a
+          key={opt.url + opt.product}
+          href={opt.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-start gap-1.5 text-xs text-primary hover:underline"
+        >
+          {opt.best ? (
+            <Star className="mt-0.5 size-3 shrink-0 fill-primary text-primary" />
+          ) : (
+            <ExternalLink className="mt-0.5 size-3 shrink-0 opacity-60" />
+          )}
+          <span>
+            <span className="font-medium">{opt.vendor}</span>
+            {" — "}
+            {opt.product}
+            <span className="text-muted-foreground">
+              {" "}
+              · {opt.priceNote}
+              {opt.best ? " · best value" : ""}
+            </span>
+          </span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 export function Dashboard() {
   const [widthFt, setWidthFt] = useState<number>(SITE.defaultWidth);
   const [depthFt, setDepthFt] = useState<number>(SITE.defaultDepth);
@@ -157,31 +201,37 @@ export function Dashboard() {
         name: "Class II road base",
         qty: `${formatNumber(result.classIiCuYd + result.levelingPadCuYd, 1)} cu yd`,
         note: "Pad + wall leveling pads (round up at yard)",
+        itemId: "class2",
       },
       {
         name: '¾" clean drainage rock',
         qty: `${formatNumber(result.drainageRockCuYd, 1)} cu yd`,
         note: "Both wall chimneys",
+        itemId: "drain-rock",
       },
       {
         name: "DG / sharp sand",
         qty: `${formatNumber(result.beddingCuYd, 1)} cu yd`,
         note: "1 in bedding",
+        itemId: "bedding",
       },
       {
         name: "SRW + caps",
         qty: `${result.srwBlocks} + ${result.capBlocks} caps`,
         note: "Both walls",
+        itemId: "srw",
       },
       {
         name: "Turf roll stock",
         qty: `${result.turfSqFt} sq ft`,
         note: "Includes waste",
+        itemId: "turf",
       },
       {
         name: "Trex boards",
         qty: `${result.trexLf} lf`,
         note: "Sideboards on PT frame",
+        itemId: "trex",
       },
     ];
   }, [result]);
@@ -197,16 +247,17 @@ export function Dashboard() {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Santa Rosa hillside · youth futsal terrace
+            <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              <MapPin className="size-3" />
+              San Rafael, CA 94901 · youth futsal terrace
             </p>
             <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               Turf Pad Builder
             </h1>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
               Size the cut-and-fill pad, balance dirt on-site, size walls &
-              drainage, and price DIY or pro — for a flat futsal strip above the
-              pool.
+              drainage, and price DIY or pro — with buy links for San Rafael /
+              North Bay yards.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -418,6 +469,11 @@ export function Dashboard() {
                       {w}
                     </li>
                   ))}
+                  <li className="leading-relaxed">
+                    Project site: San Rafael 94901 — confirm permits with City
+                    of San Rafael Building Division (hillside + fill wall + pool
+                    proximity).
+                  </li>
                 </ul>
               </CardContent>
             </Card>
@@ -431,6 +487,7 @@ export function Dashboard() {
               <TabsTrigger value="section">Cut / fill</TabsTrigger>
               <TabsTrigger value="costs">Costs</TabsTrigger>
               <TabsTrigger value="bom">Materials</TabsTrigger>
+              <TabsTrigger value="buy">Buy links</TabsTrigger>
               <TabsTrigger value="build">Build steps</TabsTrigger>
             </TabsList>
 
@@ -559,7 +616,7 @@ export function Dashboard() {
                     </CardTitle>
                     <CardDescription>
                       {mode === "diy" ? "DIY materials" : "Pro installed"} ·
-                      NorCal retail blend 2025–26
+                      North Bay retail blend 2025–26
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -687,10 +744,10 @@ export function Dashboard() {
                       </ResponsiveContainer>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Unit prices are blended DIY retail (Bay Area / NorCal).
-                      Pro mode adds wall install (~$28/sq ft face), turf labor
-                      (~$6.50/sq ft), and machine grading. Always get local
-                      quotes before ordering.
+                      Unit prices are blended DIY retail for the North Bay
+                      (San Rafael / Marin + Santa Rosa yards OK). Pro mode adds
+                      wall install (~$28/sq ft face), turf labor (~$6.50/sq ft),
+                      and machine grading. Confirm live prices via Buy links.
                     </p>
                   </CardContent>
                 </Card>
@@ -705,8 +762,8 @@ export function Dashboard() {
                     Bill of materials
                   </CardTitle>
                   <CardDescription>
-                    Scaled from the 13 × 24 cut-and-fill spec · quantities
-                    update live with size
+                    Scaled from the 13 × 24 cut-and-fill spec · star = best-value
+                    buy link for San Rafael 94901
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="min-w-0 space-y-6">
@@ -715,28 +772,45 @@ export function Dashboard() {
                       Aggregate shopping (round up at the yard)
                     </h4>
                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                      {shoppingAggregates.map((a) => (
-                        <div
-                          key={a.name}
-                          className="rounded-lg border border-border bg-muted/40 px-3 py-2"
-                        >
-                          <p className="text-sm font-medium">{a.name}</p>
-                          <p className="font-mono text-sm tabular-nums text-primary">
-                            {a.qty}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {a.note}
-                          </p>
-                        </div>
-                      ))}
+                      {shoppingAggregates.map((a) => {
+                        const best = getBestOption(
+                          getSuppliersForItem(a.itemId) ?? SUPPLIER_GROUPS[0]!,
+                        );
+                        return (
+                          <div
+                            key={a.name}
+                            className="rounded-lg border border-border bg-muted/40 px-3 py-2"
+                          >
+                            <p className="text-sm font-medium">{a.name}</p>
+                            <p className="font-mono text-sm tabular-nums text-primary">
+                              {a.qty}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {a.note}
+                            </p>
+                            {best ? (
+                              <a
+                                href={best.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                              >
+                                <Star className="size-3 fill-primary" />
+                                {best.vendor}
+                                <ExternalLink className="size-3" />
+                              </a>
+                            ) : null}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
                   <div className="w-full max-w-full overflow-x-auto overscroll-x-contain">
-                    <table className="w-full min-w-[480px] text-left text-sm">
+                    <table className="w-full min-w-[520px] text-left text-sm">
                       <thead>
                         <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                          <th className="pb-2 pr-2 font-medium">Item</th>
+                          <th className="pb-2 pr-2 font-medium">Item + buy</th>
                           <th className="pb-2 pr-2 font-medium">Qty</th>
                           <th className="pb-2 pr-2 font-medium">Unit $</th>
                           <th className="pb-2 font-medium">Total</th>
@@ -748,23 +822,24 @@ export function Dashboard() {
                             key={item.id}
                             className="border-b border-border/50 align-top"
                           >
-                            <td className="py-2 pr-2">
+                            <td className="py-2.5 pr-2">
                               <p className="font-medium">{item.name}</p>
                               <p className="text-xs text-muted-foreground">
                                 {CATEGORY_LABELS[item.category]}
                                 {item.notes ? ` · ${item.notes}` : ""}
                               </p>
+                              <BuyLinks itemId={item.id} />
                             </td>
-                            <td className="py-2 pr-2 whitespace-nowrap font-mono tabular-nums">
+                            <td className="py-2.5 pr-2 whitespace-nowrap font-mono tabular-nums">
                               {formatNumber(item.qty, item.qty >= 20 ? 0 : 1)}{" "}
                               {item.unit}
                             </td>
-                            <td className="py-2 pr-2 font-mono tabular-nums">
+                            <td className="py-2.5 pr-2 font-mono tabular-nums">
                               {item.unitCost === 0
                                 ? "—"
                                 : formatCurrency(item.unitCost, 2)}
                             </td>
-                            <td className="py-2 font-mono tabular-nums">
+                            <td className="py-2.5 font-mono tabular-nums">
                               {item.total === 0
                                 ? "—"
                                 : formatCurrency(item.total)}
@@ -802,6 +877,125 @@ export function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="buy" className="min-w-0">
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShoppingCart className="size-4 shrink-0 text-primary" />
+                      Where to buy — San Rafael 94901
+                    </CardTitle>
+                    <CardDescription>
+                      Starred options are best value as of research (Aug 2026).
+                      Aggregates: local yards. Pipe/Trex/blocks: Home Depot
+                      BOPIS. Santa Rosa / Sonoma yards OK if delivery is
+                      cheaper.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {LOCAL_YARDS.map((y) => (
+                        <a
+                          key={y.name}
+                          href={y.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/40"
+                        >
+                          <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                            {y.name}
+                            <ExternalLink className="size-3.5 text-primary" />
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {y.address}
+                          </p>
+                          {y.phone ? (
+                            <p className="mt-0.5 font-mono text-xs text-foreground">
+                              {y.phone}
+                            </p>
+                          ) : null}
+                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                            {y.note}
+                          </p>
+                        </a>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {SUPPLIER_GROUPS.map((group) => {
+                  const best = getBestOption(group);
+                  return (
+                    <Card key={group.title} className="min-w-0">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">
+                          {group.title}
+                        </CardTitle>
+                        <CardDescription>{group.tip}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="divide-y divide-border">
+                          {group.options.map((opt) => (
+                            <li key={opt.url + opt.product}>
+                              <a
+                                href={opt.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex flex-col gap-0.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                              >
+                                <div className="min-w-0">
+                                  <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
+                                    {opt.best ? (
+                                      <Badge variant="default" className="gap-1">
+                                        <Star className="size-3 fill-primary-foreground" />
+                                        Best value
+                                      </Badge>
+                                    ) : null}
+                                    {opt.vendor}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {opt.product}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {opt.area}
+                                    {opt.phone ? ` · ${opt.phone}` : ""}
+                                  </p>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2 sm:text-right">
+                                  <span
+                                    className={
+                                      opt.best
+                                        ? "font-mono text-sm font-medium text-primary"
+                                        : "font-mono text-sm text-muted-foreground"
+                                    }
+                                  >
+                                    {opt.priceNote}
+                                  </span>
+                                  <ExternalLink className="size-3.5 text-primary" />
+                                </div>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                        {best ? (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Tip: open the starred row first — usually lowest
+                            landed cost for this line.
+                          </p>
+                        ) : null}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+
+                <p className="text-center text-xs text-muted-foreground">
+                  Prices change — re-check before ordering. Call A&S or North
+                  Bay Materials for bulk rock quotes to 94901; compare HD vs
+                  Lowe’s same day on pipe and Trex.
+                </p>
+              </div>
             </TabsContent>
 
             <TabsContent value="build" className="min-w-0">
@@ -896,8 +1090,8 @@ export function Dashboard() {
       </main>
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        Estimates only · confirm permits, soils, and manufacturer charts before
-        building · Call 811
+        Estimates only · San Rafael 94901 · confirm permits & live prices · Call
+        811 before digging
       </footer>
     </div>
   );
