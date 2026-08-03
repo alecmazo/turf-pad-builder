@@ -291,33 +291,67 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
           ↓ pool / downhill — keep front wall independent of pool wall ↓
         </text>
 
+        {result.includeSideWalls ? (
+          <>
+            {/* SRW side returns — structural stone on left & right */}
+            <rect
+              x={leftX - 2}
+              y={backY + wallT}
+              width={wallT}
+              height={padH - wallT * 2}
+              fill="var(--color-wall)"
+              opacity={0.95}
+              rx={1}
+            />
+            <rect
+              x={rightX - wallT + 2}
+              y={backY + wallT}
+              width={wallT}
+              height={padH - wallT * 2}
+              fill="var(--color-wall)"
+              opacity={0.95}
+              rx={1}
+            />
+            <text
+              x={rightX + 16}
+              y={backY + padH / 2 + 10}
+              fill="var(--color-wall)"
+              fontSize={8}
+              fontFamily="var(--font-sans)"
+              transform={`rotate(90 ${rightX + 16} ${backY + padH / 2 + 10})`}
+            >
+              SRW side return
+            </text>
+          </>
+        ) : null}
+
         {result.includeSideboards ? (
           <>
             <rect
-              x={leftX - 3}
+              x={leftX - (result.includeSideWalls ? wallT + 2 : 3)}
               y={backY + wallT}
               width={3}
               height={padH - wallT * 2}
               fill="var(--color-accent)"
-              opacity={0.75}
+              opacity={0.85}
             />
             <rect
-              x={rightX}
+              x={rightX + (result.includeSideWalls ? 2 : 0)}
               y={backY + wallT}
               width={3}
               height={padH - wallT * 2}
               fill="var(--color-accent)"
-              opacity={0.75}
+              opacity={0.85}
             />
             <text
-              x={rightX + 14}
+              x={rightX + (result.includeSideWalls ? 28 : 14)}
               y={backY + padH / 2 + 30}
               fill="var(--color-accent)"
               fontSize={8}
               fontFamily="var(--font-sans)"
-              transform={`rotate(90 ${rightX + 14} ${backY + padH / 2 + 30})`}
+              transform={`rotate(90 ${rightX + (result.includeSideWalls ? 28 : 14)} ${backY + padH / 2 + 30})`}
             >
-              Trex boards
+              Trex ball boards
             </text>
           </>
         ) : null}

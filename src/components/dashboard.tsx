@@ -164,8 +164,11 @@ export function Dashboard() {
     SITE.defaultSideboardIn,
   );
   const [includeSideboards, setIncludeSideboards] = useState(true);
+  const [includeSideWalls, setIncludeSideWalls] = useState(false);
   const [mode, setMode] = useState<Mode>("diy");
-  const [helperDays, setHelperDays] = useState(0);
+  const [includeHelpers, setIncludeHelpers] = useState(false);
+  const [helperCount, setHelperCount] = useState(2);
+  const [helperDays, setHelperDays] = useState(3);
   const [checkedPhases, setCheckedPhases] = useState<Record<number, boolean>>(
     {},
   );
@@ -179,8 +182,11 @@ export function Dashboard() {
         gradeDropFt,
         sideboardHeightIn,
         mode,
+        includeHelpers,
+        helperCount,
         helperDays,
         includeSideboards,
+        includeSideWalls,
       }),
     [
       widthFt,
@@ -188,8 +194,11 @@ export function Dashboard() {
       gradeDropFt,
       sideboardHeightIn,
       mode,
+      includeHelpers,
+      helperCount,
       helperDays,
       includeSideboards,
+      includeSideWalls,
     ],
   );
 
@@ -357,14 +366,40 @@ export function Dashboard() {
                 hint="Natural slope to level · wall height = half this"
               />
 
-              <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Edges & walls
+                </p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Front & back are always SRW (stone block) retaining walls
+                  along the {formatNumber(widthFt, 0)} ft width. Left/right
+                  sides can be stone returns, Trex ball boards, both, or
+                  neither.
+                </p>
+
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">Trex sideboards</p>
+                    <p className="text-sm font-medium">SRW side walls</p>
+                    <p className="text-xs text-muted-foreground">
+                      {includeSideWalls
+                        ? "Stone returns along both short edges (structural)"
+                        : "Off — only front & back retaining walls"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={includeSideWalls}
+                    onCheckedChange={setIncludeSideWalls}
+                    aria-label="Include SRW side walls"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">Trex ball boards</p>
                     <p className="text-xs text-muted-foreground">
                       {includeSideboards
-                        ? "PT posts + Trex face around the pad"
-                        : "Off — retaining walls contain the turf (no frame)"}
+                        ? "PT frame + Trex face — ball stop, not retaining"
+                        : "Off — no composite sideboards"}
                     </p>
                   </div>
                   <Switch
@@ -373,22 +408,20 @@ export function Dashboard() {
                       setIncludeSideboards(on);
                       if (!on && expandedPhase === 7) setExpandedPhase(null);
                     }}
-                    aria-label="Include Trex sideboards"
+                    aria-label="Include Trex ball boards"
                   />
                 </div>
                 {includeSideboards ? (
-                  <div className="mt-3">
-                    <DimSlider
-                      label="Sideboard height"
-                      value={sideboardHeightIn}
-                      min={3.5}
-                      max={11}
-                      step={0.5}
-                      unit="in"
-                      onChange={setSideboardHeightIn}
-                      hint="Boards nailed to PT posts & rails after walls"
-                    />
-                  </div>
+                  <DimSlider
+                    label="Trex board height"
+                    value={sideboardHeightIn}
+                    min={3.5}
+                    max={11}
+                    step={0.5}
+                    unit="in"
+                    onChange={setSideboardHeightIn}
+                    hint="Nailed to PT posts & rails after walls"
+                  />
                 ) : null}
               </div>
 
@@ -431,16 +464,48 @@ export function Dashboard() {
               </div>
 
               {mode === "diy" ? (
-                <DimSlider
-                  label="Optional helper days"
-                  value={helperDays}
-                  min={0}
-                  max={10}
-                  step={1}
-                  unit="days"
-                  onChange={setHelperDays}
-                  hint="Day labor for earthwork & base (~$280/day)"
-                />
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">Day-labor helpers</p>
+                      <p className="text-xs text-muted-foreground">
+                        {includeHelpers
+                          ? `${helperCount} helper${helperCount > 1 ? "s" : ""} × ${helperDays} day${helperDays > 1 ? "s" : ""} = ${helperCount * helperDays} person-days`
+                          : "Off — solo DIY (or friends free)"}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={includeHelpers}
+                      onCheckedChange={setIncludeHelpers}
+                      aria-label="Include day-labor helpers"
+                    />
+                  </div>
+                  {includeHelpers ? (
+                    <>
+                      <DimSlider
+                        label="Number of helpers"
+                        value={helperCount}
+                        min={1}
+                        max={6}
+                        step={1}
+                        unit="people"
+                        onChange={setHelperCount}
+                        hint="How many hired hands on site together"
+                      />
+                      <DimSlider
+                        label="Days of help"
+                        value={helperDays}
+                        min={1}
+                        max={14}
+                        step={1}
+                        unit="days"
+                        onChange={setHelperDays}
+                        hint="~$280/person-day · earthwork & base are the heavy lifts"
+
+                      />
+                    </>
+                  ) : null}
+                </div>
               ) : null}
             </CardContent>
           </Card>
@@ -1189,8 +1254,10 @@ export function Dashboard() {
                   is a skills / 2v2–3v3 strip — not a full court. Pair with
                   portable goals (~2 m × 3 m for youth)
                   {includeSideboards
-                    ? ", rounded Trex corners,"
-                    : " (walls hold the edges — no Trex),"}{" "}
+                    ? ", rounded Trex corners for ball stop,"
+                    : includeSideWalls
+                      ? " with SRW side returns,"
+                      : " (front/back walls only),"}{" "}
                   and short-pile recreational turf with silica infill for ball
                   roll.
                 </p>

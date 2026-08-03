@@ -17,13 +17,26 @@ export interface PadInputs {
   /** Sideboard height above finished turf (Trex face). */
   sideboardHeightIn: number;
   mode: Mode;
-  /** Optional labor day rate if hiring help on DIY earthwork. */
+  /**
+   * Hire day-labor helpers (DIY mode). When off, helper cost is $0.
+   */
+  includeHelpers?: boolean;
+  /** Number of helpers on site at once. */
+  helperCount?: number;
+  /** Days of helper labor. */
   helperDays: number;
   /**
    * PT frame + Trex sideboards around the pad.
-   * Off when walls alone contain the turf (retaining-wall-only build).
+   * Ball containment / finished edge — NOT structural retaining.
+   * Off when walls alone contain the turf.
    */
   includeSideboards?: boolean;
+  /**
+   * SRW side returns (left & right along depth).
+   * Stone/block walls that close the box between front & back walls.
+   * Distinct from Trex — these hold soil if the sides need retaining.
+   */
+  includeSideWalls?: boolean;
 }
 
 export interface LineItem {
@@ -70,6 +83,12 @@ export interface PadResult {
   trexLf: number;
   beamLf: number;
   includeSideboards: boolean;
+  includeSideWalls: boolean;
+  includeHelpers: boolean;
+  helperCount: number;
+  helperDays: number;
+  helperPersonDays: number;
+  sideWallFaceSqFt: number;
   items: LineItem[];
   subtotal: number;
   contingency: number;
@@ -153,6 +172,16 @@ export function calcPad(input: PadInputs): PadResult {
   const sideboardHeightIn = clamp(input.sideboardHeightIn, 3, 12);
   const mode = input.mode;
   const includeSideboards = input.includeSideboards !== false;
+  const includeSideWalls = input.includeSideWalls === true;
+  const includeHelpers =
+    mode === "diy" &&
+    input.includeHelpers === true &&
+    (input.helperDays ?? 0) > 0;
+  const helperCount = clamp(Math.round(input.helperCount ?? 1), 1, 8);
+  const helperDays = includeHelpers
+    ? clamp(Math.round(input.helperDays), 1, 21)
+    : 0;
+  const helperPersonDays = includeHelpers ? helperCount * helperDays : 0;
 
   const areaSqFt = widthFt * depthFt;
 
@@ -163,19 +192,46 @@ export function calcPad(input: PadInputs): PadResult {
   const netImportCuYd = 0;
 
   const faceHeight = wallHeightFt + 0.5;
-  const wallFaceSqFtOne = widthFt * faceHeight;
-  const wallFaceSqFt = wallFaceSqFtOne * 2;
+  // Front + back walls run the WIDTH (along contour)
+  const mainWallFaceSqFt = 2 * widthFt * faceHeight;
+  // Side returns run the DEPTH; average ~70% of main face (taper front↔back)
+  const sideFaceH = faceHeight * 0.7;
+  const sideWallFaceSqFt = includeSideWalls
+    ? round(2 * depthFt * sideFaceH, 0)
+    : 0;
+  const wallFaceSqFt = mainWallFaceSqFt + sideWallFaceSqFt;
   const srwBlocks = Math.ceil(wallFaceSqFt);
-  const capBlocks = Math.ceil((widthFt * 2) / 1.5);
+  const capBlocks = Math.ceil(
+    (widthFt * 2 + (includeSideWalls ? depthFt * 2 : 0)) / 1.5,
+  );
 
   const geogridDepth = Math.min(5, depthFt * 0.4);
-  const geogridSqFt = round(2 * geogridDepth * widthFt, 0);
+  // Geogrid mainly on front fill wall; small allowance if side returns hold fill
+  const geogridSqFt = round(
+    2 * geogridDepth * widthFt +
+      (includeSideWalls ? 0.5 * geogridDepth * depthFt * 2 : 0),
+    0,
+  );
 
-  const levelingPadCuYd = round((2 * (0.5 * 2 * widthFt)) / 27, 2);
+  const levelingPadCuYd = round(
+    (2 * (0.5 * 2 * widthFt) +
+      (includeSideWalls ? 2 * (0.5 * 2 * depthFt) : 0)) /
+      27,
+    2,
+  );
 
-  const drainageRockCuYd = round((2 * (1 * faceHeight * widthFt)) / 27, 1);
+  const drainageRockCuYd = round(
+    (2 * (1 * faceHeight * widthFt) +
+      (includeSideWalls ? 2 * (0.75 * sideFaceH * depthFt) : 0)) /
+      27,
+    1,
+  );
 
-  const filterFabricSqFt = round(2 * (faceHeight + 2) * (widthFt + 2), 0);
+  const filterFabricSqFt = round(
+    2 * (faceHeight + 2) * (widthFt + 2) +
+      (includeSideWalls ? 2 * (sideFaceH + 2) * (depthFt + 2) : 0),
+    0,
+  );
 
   const perforatedPipeLf = round(widthFt * 2 + 4, 0);
   const solidOutletLf = round(depthFt + wallHeightFt + 8, 0);
@@ -233,11 +289,15 @@ export function calcPad(input: PadInputs): PadResult {
     line({
       id: "srw",
       category: "walls",
-      name: "SRW blocks (both walls)",
+      name: includeSideWalls
+        ? "SRW blocks (front, back + side returns)"
+        : "SRW blocks (front & back walls)",
       qty: srwBlocks,
       unit: "ea",
       unitCost: UNIT_COSTS.srwBlock,
-      notes: `~${round(faceHeight, 1)} ft face × ${widthFt} ft × 2`,
+      notes: includeSideWalls
+        ? `Front/back ~${round(faceHeight, 1)} ft × ${widthFt} ft + sides ~${round(sideFaceH, 1)} ft × ${depthFt} ft`
+        : `~${round(faceHeight, 1)} ft face × ${widthFt} ft × 2 (no side returns)`,
     }),
   );
   items.push(
@@ -248,6 +308,9 @@ export function calcPad(input: PadInputs): PadResult {
       qty: capBlocks,
       unit: "ea",
       unitCost: UNIT_COSTS.capBlock,
+      notes: includeSideWalls
+        ? "Caps on front, back, and both side returns"
+        : "Caps on front & back only",
     }),
   );
   items.push(
@@ -452,7 +515,7 @@ export function calcPad(input: PadInputs): PadResult {
         qty: trexLf,
         unit: "lf",
         unitCost: UNIT_COSTS.trexLf,
-        notes: `${courses} course(s) @ ${sideboardHeightIn}" face`,
+        notes: `${courses} course(s) @ ${sideboardHeightIn}" face · ball containment, not retaining`,
       }),
     );
     items.push(
@@ -508,16 +571,16 @@ export function calcPad(input: PadInputs): PadResult {
         unitCost: UNIT_COSTS.wheelbarrow + UNIT_COSTS.turfKnife,
       }),
     );
-    if (input.helperDays > 0) {
+    if (includeHelpers && helperPersonDays > 0) {
       items.push(
         line({
           id: "helpers",
           category: "labor",
-          name: "Day labor helpers",
-          qty: input.helperDays,
-          unit: "day",
+          name: `Day labor helpers (${helperCount}×${helperDays}d)`,
+          qty: helperPersonDays,
+          unit: "person-day",
           unitCost: UNIT_COSTS.helperDay,
-          notes: "Optional — earthwork & base are the heavy lifts",
+          notes: `${helperCount} helper${helperCount > 1 ? "s" : ""} × ${helperDays} day${helperDays > 1 ? "s" : ""} · ~$${UNIT_COSTS.helperDay}/person-day`,
         }),
       );
     }
@@ -595,6 +658,12 @@ export function calcPad(input: PadInputs): PadResult {
     trexLf,
     beamLf,
     includeSideboards,
+    includeSideWalls,
+    includeHelpers,
+    helperCount: includeHelpers ? helperCount : 0,
+    helperDays,
+    helperPersonDays,
+    sideWallFaceSqFt,
     items: active,
     subtotal,
     contingency,
@@ -617,7 +686,7 @@ export const CATEGORY_LABELS: Record<LineItem["category"], string> = {
   drainage: "Drainage",
   base: "Turf base",
   turf: "Artificial turf",
-  sideboards: "Trex sideboards & frame",
+  sideboards: "Trex ball boards & frame",
   tools: "Tools & delivery",
   labor: "Labor",
 };
