@@ -71,8 +71,8 @@ export const MATERIAL_LABELS: Record<string, string> = {
 export const PHASE_MATERIALS: Record<number, string[]> = {
   1: ["class2", "srw", "perf", "turf"],
   2: ["cut-fill", "compactor", "class2"],
-  3: ["srw", "caps", "geogrid", "drain-rock", "perf"],
-  4: ["srw", "drain-rock", "perf", "filter"],
+  3: ["srw", "caps", "geogrid", "drain-rock", "perf", "solid"],
+  4: ["srw", "drain-rock", "perf", "filter", "solid"],
   5: ["perf", "solid", "fittings"],
   6: ["geo", "class2", "bedding", "compactor"],
   7: ["beams", "trex", "hardware"],

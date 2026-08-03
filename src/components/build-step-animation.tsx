@@ -385,73 +385,61 @@ function AnimCutFill({ active, matProps }: SceneProps) {
 function AnimFrontWall({ active, matProps }: SceneProps) {
   return (
     <g className={active ? "anim-wall" : undefined}>
+      {/* Section: uphill fill ← left · front wall · downhill → right */}
       <rect
-        x="80"
-        y="60"
-        width="200"
-        height="100"
+        x="70"
+        y="70"
+        width="195"
+        height="90"
         fill="var(--color-hill)"
-        opacity=".25"
+        opacity=".28"
       />
-      <g {...matProps("srw")}>
-        <rect
-          x="280"
-          y="150"
-          width="50"
-          height="12"
-          fill="var(--color-muted-foreground)"
-          className="anim-rise"
-        />
-        <rect
-          x="285"
-          y="130"
-          width="40"
-          height="18"
-          fill="var(--color-wall)"
-          className="anim-block-1"
-        />
-        <rect
-          x="285"
-          y="112"
-          width="40"
-          height="18"
-          fill="var(--color-wall)"
-          className="anim-block-2"
-        />
-        <rect
-          x="285"
-          y="94"
-          width="40"
-          height="18"
-          fill="var(--color-wall)"
-          className="anim-block-3"
-        />
-      </g>
-      <g {...matProps("caps")}>
-        <rect
-          x="283"
-          y="82"
-          width="44"
-          height="12"
-          fill="#A8A298"
-          className="anim-block-4"
-        />
-      </g>
+      <text
+        x="140"
+        y="62"
+        fill="var(--color-muted-foreground)"
+        fontSize="9"
+        fontFamily="var(--font-sans)"
+      >
+        compacted fill (pad)
+      </text>
+      <text
+        x="355"
+        y="100"
+        fill="var(--color-muted-foreground)"
+        fontSize="9"
+        fontFamily="var(--font-sans)"
+        textAnchor="middle"
+      >
+        downhill
+      </text>
+
+      {/* Finished pad surface */}
+      <line
+        x1="70"
+        y1="78"
+        x2="268"
+        y2="82"
+        stroke="var(--color-turf-deep)"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+
       <g {...matProps("geogrid")}>
         <line
-          x1="100"
-          y1="120"
-          x2="285"
-          y2="120"
+          x1="90"
+          y1="115"
+          x2="268"
+          y2="115"
           stroke="var(--color-pipe)"
           strokeWidth="2"
           strokeDasharray="6 3"
           className="anim-grid-1"
         />
         <line
-          x1="100"
+          x1="90"
           y1="100"
-          x2="285"
+          x2="268"
           y2="100"
           stroke="var(--color-pipe)"
           strokeWidth="2"
@@ -459,51 +447,208 @@ function AnimFrontWall({ active, matProps }: SceneProps) {
           className="anim-grid-2"
         />
         <text
-          x="160"
+          x="140"
           y="96"
           fill="var(--color-pipe)"
           fontSize="9"
           fontFamily="var(--font-sans)"
           className="anim-fade-in anim-delay-2"
         >
-          geogrid
+          geogrid into fill
         </text>
       </g>
+
+      {/* 12″ drain-rock chimney immediately behind front wall (fill side) */}
       <g {...matProps("drain-rock")}>
         <rect
-          x="270"
-          y="90"
-          width="12"
-          height="60"
+          x="268"
+          y="82"
+          width="16"
+          height="78"
           fill="var(--color-drain)"
-          opacity=".55"
-          className="anim-fade-in anim-delay-3"
+          opacity=".5"
+          className="anim-fade-in anim-delay-2"
         />
-        <circle cx="276" cy="100" r="2" fill="#A8B4BE" className="anim-fade-in anim-delay-3" />
-        <circle cx="276" cy="112" r="2" fill="#A8B4BE" className="anim-fade-in anim-delay-3" />
-        <circle cx="276" cy="124" r="2" fill="#A8B4BE" className="anim-fade-in anim-delay-3" />
+        {[90, 102, 114, 126, 138, 148].map((y, i) => (
+          <circle
+            key={i}
+            cx={276}
+            cy={y}
+            r={2.2}
+            fill="#A8B4BE"
+            className="anim-fade-in anim-delay-2"
+          />
+        ))}
+        <text
+          x="276"
+          y="74"
+          textAnchor="middle"
+          fill="var(--color-drain)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-2"
+        >
+          rock chimney
+        </text>
       </g>
+
+      <g {...matProps("srw")}>
+        <rect
+          x="284"
+          y="152"
+          width="52"
+          height="12"
+          fill="var(--color-muted-foreground)"
+          className="anim-rise"
+        />
+        <rect
+          x="288"
+          y="134"
+          width="44"
+          height="18"
+          fill="var(--color-wall)"
+          className="anim-block-1"
+        />
+        <rect
+          x="288"
+          y="116"
+          width="44"
+          height="18"
+          fill="var(--color-wall)"
+          className="anim-block-2"
+        />
+        <rect
+          x="288"
+          y="98"
+          width="44"
+          height="18"
+          fill="var(--color-wall)"
+          className="anim-block-3"
+        />
+      </g>
+      <g {...matProps("caps")}>
+        <rect
+          x="286"
+          y="86"
+          width="48"
+          height="12"
+          fill="#A8A298"
+          className="anim-block-4"
+        />
+      </g>
+
+      {/*
+        Collector perf runs ALONG the front wall (into the page),
+        at the base of the drain-rock chimney — not under the pad pitch.
+        Shown end-on as a perforated circle.
+      */}
       <g {...matProps("perf")}>
-        <line
-          x1="80"
-          y1="155"
-          x2="280"
-          y2="155"
-          stroke="var(--color-drain)"
-          strokeWidth="4"
-          strokeDasharray="5 3"
+        <circle
+          cx="276"
+          cy="148"
+          r="9"
+          fill="var(--color-pipe)"
+          className="anim-pop anim-delay-3"
+        />
+        <circle
+          cx="276"
+          cy="148"
+          r="4"
+          fill="var(--color-background)"
+          className="anim-pop anim-delay-3"
+        />
+        {/* perforation marks around the ring */}
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+          const r = 6.5;
+          const a = (deg * Math.PI) / 180;
+          return (
+            <circle
+              key={deg}
+              cx={276 + r * Math.cos(a)}
+              cy={148 + r * Math.sin(a)}
+              r={1.1}
+              fill="var(--color-success)"
+              className="anim-pop anim-delay-3"
+            />
+          );
+        })}
+        <text
+          x="230"
+          y="172"
+          textAnchor="middle"
+          fill="var(--color-drain)"
+          fontSize="9"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-3"
+        >
+          4″ collector perf
+        </text>
+        <text
+          x="230"
+          y="183"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-3"
+        >
+          along wall (into page) · ~1% pitch
+        </text>
+      </g>
+
+      {/* Solid outlet leaves at the low end of the collector — not under the pad */}
+      <g {...matProps("solid")}>
+        <path
+          d="M285 148 L320 148 L335 165"
+          fill="none"
+          stroke="var(--color-pipe)"
+          strokeWidth="7"
+          strokeLinecap="round"
           className="anim-draw anim-delay-3"
         />
+        <polygon
+          points="340,170 328,162 336,156"
+          fill="var(--color-pipe)"
+          className="anim-fade-in anim-delay-3"
+        />
+        <text
+          x="348"
+          y="158"
+          fill="var(--color-pipe)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-3"
+        >
+          solid outlet
+        </text>
+        <text
+          x="348"
+          y="168"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-3"
+        >
+          daylights downhill
+        </text>
       </g>
+
+      {/* Flow hint: water down chimney into collector */}
+      <g className="anim-drip" fill="var(--color-drain)" opacity=".65">
+        <circle cx="276" cy="100" r="2.5" />
+        <circle cx="276" cy="118" r="2.5" />
+        <circle cx="276" cy="132" r="2.5" />
+      </g>
+
       <text
         x="200"
-        y="200"
+        y="210"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
-        fontSize="12"
+        fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Front wall + geogrid + drain chimney
+        Chimney drains fill → collector along wall → solid out
       </text>
     </g>
   );
@@ -512,66 +657,117 @@ function AnimFrontWall({ active, matProps }: SceneProps) {
 function AnimBackWall({ active, matProps }: SceneProps) {
   return (
     <g className={active ? "anim-wall" : undefined}>
-      <rect x="40" y="50" width="30" height="110" fill="var(--color-hill)" opacity=".6" />
+      {/* Section: hillside/cut ← left · back wall · pad fill → right */}
+      <rect x="30" y="50" width="40" height="120" fill="var(--color-hill)" opacity=".7" />
+      <text
+        x="50"
+        y="44"
+        textAnchor="middle"
+        fill="var(--color-muted-foreground)"
+        fontSize="9"
+        fontFamily="var(--font-sans)"
+      >
+        cut bank
+      </text>
+      <rect
+        x="130"
+        y="78"
+        width="230"
+        height="82"
+        fill="var(--color-hill)"
+        opacity=".22"
+      />
+      <line
+        x1="130"
+        y1="82"
+        x2="360"
+        y2="86"
+        stroke="var(--color-turf-deep)"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <text
+        x="250"
+        y="72"
+        fill="var(--color-muted-foreground)"
+        fontSize="9"
+        fontFamily="var(--font-sans)"
+      >
+        pad fill
+      </text>
+
       <g {...matProps("srw")}>
         <rect
           x="70"
-          y="150"
+          y="152"
           width="50"
           height="12"
           fill="var(--color-muted-foreground)"
           className="anim-rise"
         />
         <rect
-          x="75"
-          y="130"
-          width="40"
+          x="74"
+          y="134"
+          width="42"
           height="18"
           fill="var(--color-wall)"
           className="anim-block-1"
         />
         <rect
-          x="75"
-          y="112"
-          width="40"
+          x="74"
+          y="116"
+          width="42"
           height="18"
           fill="var(--color-wall)"
           className="anim-block-2"
         />
         <rect
-          x="75"
-          y="94"
-          width="40"
+          x="74"
+          y="98"
+          width="42"
           height="18"
           fill="var(--color-wall)"
           className="anim-block-3"
         />
         <rect
-          x="73"
-          y="82"
-          width="44"
+          x="72"
+          y="86"
+          width="46"
           height="12"
           fill="#A8A298"
           className="anim-block-4"
         />
       </g>
+
+      {/* Drain chimney on pad side of back wall — intercepts hillside seepage */}
       <g {...matProps("drain-rock")}>
         <rect
-          x="115"
-          y="90"
-          width="14"
-          height="60"
+          x="120"
+          y="86"
+          width="16"
+          height="74"
           fill="var(--color-drain)"
-          opacity=".55"
+          opacity=".5"
           className="anim-fade-in anim-delay-2"
         />
-        <circle cx="122" cy="102" r="2" fill="#A8B4BE" />
-        <circle cx="122" cy="116" r="2" fill="#A8B4BE" />
-        <circle cx="122" cy="130" r="2" fill="#A8B4BE" />
+        {[96, 108, 120, 132, 144].map((y, i) => (
+          <circle key={i} cx={128} cy={y} r={2.2} fill="#A8B4BE" />
+        ))}
+        <text
+          x="128"
+          y="78"
+          textAnchor="middle"
+          fill="var(--color-drain)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+        >
+          rock chimney
+        </text>
       </g>
+
       <g {...matProps("filter")}>
         <path
-          d="M112 88 L132 88 L132 152 L112 152"
+          d="M118 86 L138 86 L138 160 L118 160"
           fill="none"
           stroke="#2A2A2E"
           strokeWidth="2.5"
@@ -579,7 +775,7 @@ function AnimBackWall({ active, matProps }: SceneProps) {
           className="anim-draw anim-delay-1"
         />
         <text
-          x="145"
+          x="150"
           y="100"
           fill="#2A2A2E"
           fontSize="9"
@@ -589,32 +785,96 @@ function AnimBackWall({ active, matProps }: SceneProps) {
           filter fabric
         </text>
       </g>
+
+      {/* Interceptor perf: end-on in chimney, runs along back wall (into page) */}
       <g {...matProps("perf")}>
-        <line
-          x1="120"
-          y1="155"
-          x2="340"
-          y2="155"
-          stroke="var(--color-drain)"
-          strokeWidth="4"
-          strokeDasharray="5 3"
-          className="anim-draw anim-delay-2"
+        <circle
+          cx="128"
+          cy="148"
+          r="9"
+          fill="var(--color-pipe)"
+          className="anim-pop anim-delay-2"
         />
+        <circle
+          cx="128"
+          cy="148"
+          r="4"
+          fill="var(--color-background)"
+          className="anim-pop anim-delay-2"
+        />
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+          const r = 6.5;
+          const a = (deg * Math.PI) / 180;
+          return (
+            <circle
+              key={deg}
+              cx={128 + r * Math.cos(a)}
+              cy={148 + r * Math.sin(a)}
+              r={1.1}
+              fill="var(--color-success)"
+              className="anim-pop anim-delay-2"
+            />
+          );
+        })}
+        <text
+          x="175"
+          y="172"
+          fill="var(--color-drain)"
+          fontSize="9"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-2"
+        >
+          4″ interceptor perf
+        </text>
+        <text
+          x="175"
+          y="183"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-2"
+        >
+          along back wall · pitches to solid outlet
+        </text>
       </g>
-      <g className="anim-drip" fill="var(--color-drain)" opacity=".7">
-        <circle cx="55" cy="70" r="3" />
-        <circle cx="55" cy="90" r="3" />
-        <circle cx="55" cy="110" r="3" />
+
+      {/* Solid runs along the low end (left of pad in plan) — not under the pad depth */}
+      <g {...matProps("solid")}>
+        <path
+          d="M128 148 L128 175 L200 185"
+          fill="none"
+          stroke="var(--color-pipe)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          className="anim-draw anim-delay-3"
+          opacity=".85"
+        />
+        <text
+          x="210"
+          y="190"
+          fill="var(--color-pipe)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-3"
+        >
+          → solid outlet (side of pad)
+        </text>
+      </g>
+
+      <g className="anim-drip" fill="var(--color-drain)" opacity=".75">
+        <circle cx="50" cy="70" r="3" />
+        <circle cx="50" cy="90" r="3" />
+        <circle cx="50" cy="110" r="3" />
       </g>
       <text
         x="200"
-        y="200"
+        y="210"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
-        fontSize="12"
+        fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Back wall intercepts hillside water
+        Hillside water → chimney → interceptor along wall
       </text>
     </g>
   );
@@ -623,6 +883,7 @@ function AnimBackWall({ active, matProps }: SceneProps) {
 function AnimDrainage({ active, matProps }: SceneProps) {
   return (
     <g className={active ? "anim-drain" : undefined}>
+      {/* Plan view: back wall top, front wall bottom, solid on left side */}
       <rect
         x="80"
         y="50"
@@ -632,6 +893,26 @@ function AnimDrainage({ active, matProps }: SceneProps) {
         opacity=".25"
         rx="4"
       />
+      <text
+        x="200"
+        y="42"
+        textAnchor="middle"
+        fill="var(--color-muted-foreground)"
+        fontSize="8"
+        fontFamily="var(--font-sans)"
+      >
+        ↑ back wall (uphill)
+      </text>
+      <text
+        x="200"
+        y="168"
+        textAnchor="middle"
+        fill="var(--color-muted-foreground)"
+        fontSize="8"
+        fontFamily="var(--font-sans)"
+      >
+        ↓ front wall (downhill)
+      </text>
       <g {...matProps("perf")}>
         <line
           x1="90"
@@ -661,7 +942,7 @@ function AnimDrainage({ active, matProps }: SceneProps) {
           fontSize="9"
           fontFamily="var(--font-sans)"
         >
-          interceptor perf
+          interceptor · along back wall
         </text>
         <text
           x="200"
@@ -671,7 +952,7 @@ function AnimDrainage({ active, matProps }: SceneProps) {
           fontSize="9"
           fontFamily="var(--font-sans)"
         >
-          collector perf
+          collector · along front wall
         </text>
       </g>
       <g {...matProps("solid")}>
@@ -696,11 +977,10 @@ function AnimDrainage({ active, matProps }: SceneProps) {
           fontFamily="var(--font-sans)"
           transform="rotate(-90 40 120)"
         >
-          solid outlet
+          solid · side of pad
         </text>
       </g>
       <g {...matProps("fittings")}>
-        {/* elbows / tees at junctions */}
         <circle
           cx="90"
           cy="60"
@@ -753,10 +1033,10 @@ function AnimDrainage({ active, matProps }: SceneProps) {
         y="205"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
-        fontSize="12"
+        fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Both perfs pitch ~1% → solid outlet daylights
+        Both perfs along walls → solid on side → daylight
       </text>
     </g>
   );
