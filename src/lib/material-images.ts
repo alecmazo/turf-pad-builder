@@ -34,6 +34,17 @@ export const MATERIAL_IMAGES: Record<string, string> = {
   broom: m("broom"),
   "tools-buy": m("tools-buy"),
   delivery: m("delivery"),
+  // Fern tennis court
+  acrylic: m("acrylic"),
+  modular: m("modular"),
+  asphalt: m("asphalt"),
+  fence: m("fence"),
+  "gate-s": m("fence"),
+  "gate-d": m("fence"),
+  windscreen: m("windscreen"),
+  net: m("net"),
+  lines: m("acrylic"),
+  "futsal-goals": m("goals"),
   // fallbacks
   default: m("class2"),
 };
@@ -65,6 +76,14 @@ export const MATERIAL_LABELS: Record<string, string> = {
   broom: "Power broom",
   "tools-buy": "Hand tools",
   delivery: "Delivery",
+  acrylic: "Acrylic court",
+  modular: "Sport tiles",
+  asphalt: "Asphalt base",
+  fence: "Chain-link fence",
+  windscreen: "Windscreen",
+  net: "Tennis net",
+  lines: "Court lines",
+  "futsal-goals": "Futsal goals",
 };
 
 /** Materials featured in each build phase animation. */

@@ -279,7 +279,7 @@ export function Dashboard() {
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               <MapPin className="size-3" />
-              San Rafael, CA 94901 · youth futsal terrace
+              Peacock · San Rafael, CA 94901 · youth futsal terrace
             </p>
             <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               Turf Pad Builder
@@ -1274,8 +1274,8 @@ export function Dashboard() {
       </main>
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        Estimates only · San Rafael 94901 · confirm permits & live prices · Call
-        811 before digging
+        Peacock estimates · San Rafael 94901 · confirm permits & live prices ·
+        Call 811 before digging
       </footer>
     </div>
   );
