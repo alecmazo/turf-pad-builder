@@ -148,25 +148,61 @@ function CourtPlan({
   widthFt,
   includeFence,
   fenceHeightFt,
+  showFutsalGoals,
 }: {
   lengthFt: number;
   widthFt: number;
   includeFence: boolean;
   fenceHeightFt: number;
+  showFutsalGoals: boolean;
 }) {
-  const W = 520;
-  const H = 300;
-  const mx = 36;
-  const my = 28;
+  /**
+   * Plan view — baseline ends left/right, net vertical at midcourt.
+   * Regulation ITF doubles markings (ft):
+   *  length 78 · doubles width 36 · singles width 27
+   *  net @ 39 from each baseline · service line 21 from net (18 from baseline)
+   *  alleys 4.5 each side · center service line only between net & service lines
+   *  center mark on each baseline
+   */
+  const W = 640;
+  const H = 400;
+  const mx = 48;
+  const my = 40;
+  const legendH = 36;
   const padW = W - mx * 2;
-  const padH = H - my * 2 - 24;
-  // play area 78x36 inside overall
+  const padH = H - my * 2 - legendH;
+
   const scaleX = padW / lengthFt;
   const scaleY = padH / widthFt;
-  const playW = FERN.playLengthFt * scaleX;
-  const playH = FERN.playWidthFt * scaleY;
+
+  // Playing court (doubles) centered in overall pad
+  const playW = FERN.playLengthFt * scaleX; // 78 ft along X
+  const playH = FERN.playWidthFt * scaleY; // 36 ft along Y
   const playX = mx + (padW - playW) / 2;
   const playY = my + (padH - playH) / 2;
+
+  // Geometry in play-court local coords (ft from left baseline / top doubles sideline)
+  const toX = (ftFromLeftBaseline: number) => playX + ftFromLeftBaseline * scaleX;
+  const toY = (ftFromTopDoubles: number) => playY + ftFromTopDoubles * scaleY;
+
+  const alley = (FERN.playWidthFt - FERN.singlesWidthFt) / 2; // 4.5
+  const netFt = FERN.playLengthFt / 2; // 39
+  const serviceFromNet = 21;
+  const serviceFromBaseline = netFt - serviceFromNet; // 18
+  const serviceLeftX = toX(serviceFromBaseline);
+  const serviceRightX = toX(FERN.playLengthFt - serviceFromBaseline);
+  const netX = toX(netFt);
+  const singlesTopY = toY(alley);
+  const singlesBotY = toY(FERN.playWidthFt - alley);
+  const midY = toY(FERN.playWidthFt / 2);
+  const leftBaseX = playX;
+  const rightBaseX = playX + playW;
+  const topY = playY;
+  const botY = playY + playH;
+
+  const line = "var(--color-foreground)";
+  const lineSoft = "var(--color-muted-foreground)";
+  const surfaceFill = "var(--color-primary)";
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
@@ -174,117 +210,345 @@ function CourtPlan({
         viewBox={`0 0 ${W} ${H}`}
         className="mx-auto h-auto w-full max-w-3xl"
         role="img"
-        aria-label="Fern regulation tennis court plan with multi-sport layout"
+        aria-label="Fern regulation tennis court with doubles, singles, and service box markings"
       >
         {includeFence ? (
           <rect
-            x={mx - 8}
-            y={my - 8}
-            width={padW + 16}
-            height={padH + 16}
+            x={mx - 10}
+            y={my - 10}
+            width={padW + 20}
+            height={padH + 20}
             fill="none"
             stroke="var(--color-wall)"
-            strokeWidth={4}
+            strokeWidth={3}
             rx={2}
           />
         ) : null}
+
+        {/* Overall pad / runback */}
         <rect
           x={mx}
           y={my}
           width={padW}
           height={padH}
-          fill="var(--color-turf)"
-          opacity={0.35}
+          fill="var(--color-hill)"
+          opacity={0.22}
           rx={2}
         />
-        {/* doubles play */}
+        <text
+          x={mx + 6}
+          y={my + 14}
+          fill={lineSoft}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+        >
+          runback / overall pad
+        </text>
+
+        {/* Playing surface fill */}
         <rect
           x={playX}
           y={playY}
           width={playW}
           height={playH}
-          fill="var(--color-primary)"
-          opacity={0.2}
-          stroke="var(--color-primary)"
-          strokeWidth={2}
+          fill={surfaceFill}
+          opacity={0.18}
         />
-        {/* singles */}
+
+        {/* Doubles outer: baselines + doubles sidelines */}
         <rect
           x={playX}
-          y={playY + ((FERN.playWidthFt - FERN.singlesWidthFt) / 2) * scaleY}
+          y={playY}
           width={playW}
-          height={FERN.singlesWidthFt * scaleY}
+          height={playH}
           fill="none"
-          stroke="var(--color-primary)"
-          strokeWidth={1}
-          strokeDasharray="4 3"
+          stroke={line}
+          strokeWidth={2.25}
         />
-        {/* net */}
+
+        {/* Singles sidelines — full length, 4.5 ft inside doubles */}
         <line
-          x1={playX + playW / 2}
-          y1={playY}
-          x2={playX + playW / 2}
-          y2={playY + playH}
+          x1={leftBaseX}
+          y1={singlesTopY}
+          x2={rightBaseX}
+          y2={singlesTopY}
+          stroke={line}
+          strokeWidth={1.75}
+        />
+        <line
+          x1={leftBaseX}
+          y1={singlesBotY}
+          x2={rightBaseX}
+          y2={singlesBotY}
+          stroke={line}
+          strokeWidth={1.75}
+        />
+
+        {/* Service lines — 21 ft from net each side (18 ft from baseline) */}
+        <line
+          x1={serviceLeftX}
+          y1={singlesTopY}
+          x2={serviceLeftX}
+          y2={singlesBotY}
+          stroke={line}
+          strokeWidth={1.75}
+        />
+        <line
+          x1={serviceRightX}
+          y1={singlesTopY}
+          x2={serviceRightX}
+          y2={singlesBotY}
+          stroke={line}
+          strokeWidth={1.75}
+        />
+
+        {/* Center service line — only between the two service lines */}
+        <line
+          x1={serviceLeftX}
+          y1={midY}
+          x2={serviceRightX}
+          y2={midY}
+          stroke={line}
+          strokeWidth={1.75}
+        />
+
+        {/* Net (equipment) */}
+        <line
+          x1={netX}
+          y1={topY - 4}
+          x2={netX}
+          y2={botY + 4}
           stroke="var(--color-accent)"
           strokeWidth={3}
+          strokeLinecap="round"
         />
+        <circle cx={netX} cy={topY - 4} r={3.5} fill="var(--color-accent)" />
+        <circle cx={netX} cy={botY + 4} r={3.5} fill="var(--color-accent)" />
+
+        {/* Center marks on each baseline */}
+        <line
+          x1={leftBaseX}
+          y1={midY}
+          x2={leftBaseX + 4 * scaleX}
+          y2={midY}
+          stroke={line}
+          strokeWidth={2}
+        />
+        <line
+          x1={rightBaseX}
+          y1={midY}
+          x2={rightBaseX - 4 * scaleX}
+          y2={midY}
+          stroke={line}
+          strokeWidth={2}
+        />
+
         <text
-          x={playX + playW / 2}
-          y={playY - 6}
+          x={netX}
+          y={topY - 12}
           textAnchor="middle"
           fill="var(--color-accent)"
           fontSize={10}
           fontFamily="var(--font-sans)"
+          fontWeight={600}
         >
           net (removable)
         </text>
-        {/* service boxes hint */}
-        <line
-          x1={playX + playW * 0.25}
-          y1={playY + playH / 2}
-          x2={playX + playW * 0.75}
-          y2={playY + playH / 2}
-          stroke="var(--color-primary)"
-          strokeWidth={1}
-          opacity={0.6}
-        />
-        {/* futsal goals on baselines */}
-        <rect
-          x={playX - 4}
-          y={playY + playH / 2 - 14}
-          width={6}
-          height={28}
-          fill="var(--color-success)"
-          opacity={0.85}
-        />
-        <rect
-          x={playX + playW - 2}
-          y={playY + playH / 2 - 14}
-          width={6}
-          height={28}
-          fill="var(--color-success)"
-          opacity={0.85}
-        />
+
         <text
-          x={playX - 10}
-          y={playY + playH / 2 + 40}
-          fill="var(--color-success)"
-          fontSize={8}
+          x={leftBaseX - 8}
+          y={midY + 4}
+          textAnchor="middle"
+          fill={lineSoft}
+          fontSize={9}
           fontFamily="var(--font-sans)"
-          transform={`rotate(-90 ${playX - 10} ${playY + playH / 2 + 40})`}
+          transform={`rotate(-90 ${leftBaseX - 8} ${midY + 4})`}
         >
-          futsal goal
+          baseline
         </text>
         <text
-          x={W / 2}
-          y={H - 8}
+          x={rightBaseX + 10}
+          y={midY + 4}
           textAnchor="middle"
-          fill="var(--color-muted-foreground)"
+          fill={lineSoft}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+          transform={`rotate(90 ${rightBaseX + 10} ${midY + 4})`}
+        >
+          baseline
+        </text>
+
+        {/* Service box labels (from receiver's view of each end) */}
+        <text
+          x={(serviceLeftX + netX) / 2}
+          y={midY - 8}
+          textAnchor="middle"
+          fill={line}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+          opacity={0.85}
+        >
+          deuce
+        </text>
+        <text
+          x={(serviceLeftX + netX) / 2}
+          y={midY + 16}
+          textAnchor="middle"
+          fill={line}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+          opacity={0.85}
+        >
+          ad
+        </text>
+        <text
+          x={(netX + serviceRightX) / 2}
+          y={midY - 8}
+          textAnchor="middle"
+          fill={line}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+          opacity={0.85}
+        >
+          ad
+        </text>
+        <text
+          x={(netX + serviceRightX) / 2}
+          y={midY + 16}
+          textAnchor="middle"
+          fill={line}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+          opacity={0.85}
+        >
+          deuce
+        </text>
+
+        <text
+          x={toX(9)}
+          y={topY - 6}
+          textAnchor="middle"
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-sans)"
+        >
+          doubles alley
+        </text>
+
+        <text
+          x={serviceLeftX}
+          y={botY + 14}
+          textAnchor="middle"
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-mono)"
+        >
+          service line
+        </text>
+        <text
+          x={serviceRightX}
+          y={botY + 14}
+          textAnchor="middle"
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-mono)"
+        >
+          service line
+        </text>
+        <text
+          x={(leftBaseX + serviceLeftX) / 2}
+          y={botY + 14}
+          textAnchor="middle"
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-mono)"
+        >
+          18′
+        </text>
+        <text
+          x={(serviceLeftX + netX) / 2}
+          y={botY + 14}
+          textAnchor="middle"
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-mono)"
+        >
+          21′
+        </text>
+        <text
+          x={netX}
+          y={botY + 26}
+          textAnchor="middle"
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-mono)"
+        >
+          78′ play · 36′ doubles · 27′ singles
+        </text>
+
+        <text
+          x={rightBaseX + 22}
+          y={singlesTopY + 4}
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-mono)"
+        >
+          singles
+        </text>
+        <text
+          x={rightBaseX + 22}
+          y={topY + 10}
+          fill={lineSoft}
+          fontSize={8}
+          fontFamily="var(--font-mono)"
+        >
+          4.5′ alley
+        </text>
+
+        {showFutsalGoals ? (
+          <>
+            <rect
+              x={leftBaseX - 7}
+              y={midY - 16}
+              width={6}
+              height={32}
+              fill="var(--color-success)"
+              opacity={0.9}
+              rx={1}
+            />
+            <rect
+              x={rightBaseX + 1}
+              y={midY - 16}
+              width={6}
+              height={32}
+              fill="var(--color-success)"
+              opacity={0.9}
+              rx={1}
+            />
+            <text
+              x={leftBaseX - 14}
+              y={midY + 48}
+              fill="var(--color-success)"
+              fontSize={8}
+              fontFamily="var(--font-sans)"
+              transform={`rotate(-90 ${leftBaseX - 14} ${midY + 48})`}
+            >
+              futsal goal
+            </text>
+          </>
+        ) : null}
+
+        <text
+          x={W / 2}
+          y={H - 14}
+          textAnchor="middle"
+          fill={lineSoft}
           fontSize={10}
           fontFamily="var(--font-sans)"
         >
-          Overall {formatNumber(lengthFt, 0)} × {formatNumber(widthFt, 0)} ft ·
-          play 78 × 36 ·{includeFence ? ` ${fenceHeightFt}′ fence` : " no fence"}
+          Overall {formatNumber(lengthFt, 0)} × {formatNumber(widthFt, 0)} ft
+          pad · regulation markings ·
+          {includeFence ? ` ${fenceHeightFt}′ fence` : " no fence"}
         </text>
       </svg>
     </div>
@@ -741,6 +1005,7 @@ export function FernDashboard() {
                     widthFt={widthFt}
                     includeFence={includeFence}
                     fenceHeightFt={fenceHeightFt}
+                    showFutsalGoals={includeFutsalGoals}
                   />
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     {surfMeta.pros.map((p) => (
