@@ -378,31 +378,9 @@ function CourtPlan({
           baseline
         </text>
 
-        {/* Service box labels (from receiver's view of each end) */}
+        {/* Service boxes: deuce = player's right when facing the net */}
         <text
           x={(serviceLeftX + netX) / 2}
-          y={midY - 8}
-          textAnchor="middle"
-          fill={line}
-          fontSize={9}
-          fontFamily="var(--font-sans)"
-          opacity={0.85}
-        >
-          deuce
-        </text>
-        <text
-          x={(serviceLeftX + netX) / 2}
-          y={midY + 16}
-          textAnchor="middle"
-          fill={line}
-          fontSize={9}
-          fontFamily="var(--font-sans)"
-          opacity={0.85}
-        >
-          ad
-        </text>
-        <text
-          x={(netX + serviceRightX) / 2}
           y={midY - 8}
           textAnchor="middle"
           fill={line}
@@ -413,7 +391,7 @@ function CourtPlan({
           ad
         </text>
         <text
-          x={(netX + serviceRightX) / 2}
+          x={(serviceLeftX + netX) / 2}
           y={midY + 16}
           textAnchor="middle"
           fill={line}
@@ -422,6 +400,28 @@ function CourtPlan({
           opacity={0.85}
         >
           deuce
+        </text>
+        <text
+          x={(netX + serviceRightX) / 2}
+          y={midY - 8}
+          textAnchor="middle"
+          fill={line}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+          opacity={0.85}
+        >
+          deuce
+        </text>
+        <text
+          x={(netX + serviceRightX) / 2}
+          y={midY + 16}
+          textAnchor="middle"
+          fill={line}
+          fontSize={9}
+          fontFamily="var(--font-sans)"
+          opacity={0.85}
+        >
+          ad
         </text>
 
         <text
