@@ -251,32 +251,36 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
           ↓ pool / downhill — keep front wall independent of pool wall ↓
         </text>
 
-        <rect
-          x={leftX - 3}
-          y={backY + wallT}
-          width={3}
-          height={padH - wallT * 2}
-          fill="var(--color-accent)"
-          opacity={0.75}
-        />
-        <rect
-          x={rightX}
-          y={backY + wallT}
-          width={3}
-          height={padH - wallT * 2}
-          fill="var(--color-accent)"
-          opacity={0.75}
-        />
-        <text
-          x={rightX + 14}
-          y={backY + padH / 2 + 30}
-          fill="var(--color-accent)"
-          fontSize={8}
-          fontFamily="var(--font-sans)"
-          transform={`rotate(90 ${rightX + 14} ${backY + padH / 2 + 30})`}
-        >
-          Trex boards
-        </text>
+        {result.includeSideboards ? (
+          <>
+            <rect
+              x={leftX - 3}
+              y={backY + wallT}
+              width={3}
+              height={padH - wallT * 2}
+              fill="var(--color-accent)"
+              opacity={0.75}
+            />
+            <rect
+              x={rightX}
+              y={backY + wallT}
+              width={3}
+              height={padH - wallT * 2}
+              fill="var(--color-accent)"
+              opacity={0.75}
+            />
+            <text
+              x={rightX + 14}
+              y={backY + padH / 2 + 30}
+              fill="var(--color-accent)"
+              fontSize={8}
+              fontFamily="var(--font-sans)"
+              transform={`rotate(90 ${rightX + 14} ${backY + padH / 2 + 30})`}
+            >
+              Trex boards
+            </text>
+          </>
+        ) : null}
       </svg>
     </div>
   );

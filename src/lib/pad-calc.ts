@@ -19,6 +19,11 @@ export interface PadInputs {
   mode: Mode;
   /** Optional labor day rate if hiring help on DIY earthwork. */
   helperDays: number;
+  /**
+   * PT frame + Trex sideboards around the pad.
+   * Off when walls alone contain the turf (retaining-wall-only build).
+   */
+  includeSideboards?: boolean;
 }
 
 export interface LineItem {
@@ -64,6 +69,7 @@ export interface PadResult {
   capBlocks: number;
   trexLf: number;
   beamLf: number;
+  includeSideboards: boolean;
   items: LineItem[];
   subtotal: number;
   contingency: number;
@@ -146,6 +152,7 @@ export function calcPad(input: PadInputs): PadResult {
   const gradeDropFt = clamp(input.gradeDropFt, 2, 10);
   const sideboardHeightIn = clamp(input.sideboardHeightIn, 3, 12);
   const mode = input.mode;
+  const includeSideboards = input.includeSideboards !== false;
 
   const areaSqFt = widthFt * depthFt;
 
@@ -184,9 +191,13 @@ export function calcPad(input: PadInputs): PadResult {
   const perimeterLf = round(2 * (widthFt + depthFt), 1);
 
   const courses = Math.max(1, Math.ceil(sideboardHeightIn / 5.5));
-  const trexLf = round(perimeterLf * courses * 1.08, 0);
+  const trexLf = includeSideboards
+    ? round(perimeterLf * courses * 1.08, 0)
+    : 0;
   const posts = Math.ceil(perimeterLf / 4);
-  const beamLf = round(posts * (wallHeightFt + 1) + perimeterLf * 2, 0);
+  const beamLf = includeSideboards
+    ? round(posts * (wallHeightFt + 1) + perimeterLf * 2, 0)
+    : 0;
 
   const pitchPct = 1.25;
   const fallInches = round(depthFt * 12 * (pitchPct / 100), 1);
@@ -421,38 +432,40 @@ export function calcPad(input: PadInputs): PadResult {
     );
   }
 
-  items.push(
-    line({
-      id: "beams",
-      category: "sideboards",
-      name: "PT structural posts & rails",
-      qty: beamLf,
-      unit: "lf",
-      unitCost: UNIT_COSTS.pt4x4Lf * 0.55 + UNIT_COSTS.pt2x6Lf * 0.45,
-      notes: "Posts ~4 ft o.c., top/bottom rails",
-    }),
-  );
-  items.push(
-    line({
-      id: "trex",
-      category: "sideboards",
-      name: "Trex sideboards (nailed to frame)",
-      qty: trexLf,
-      unit: "lf",
-      unitCost: UNIT_COSTS.trexLf,
-      notes: `${courses} course(s) @ ${sideboardHeightIn}" face`,
-    }),
-  );
-  items.push(
-    line({
-      id: "hardware",
-      category: "sideboards",
-      name: "Fasteners, adhesive, anchors",
-      qty: 1,
-      unit: "kit",
-      unitCost: UNIT_COSTS.hardwareKit,
-    }),
-  );
+  if (includeSideboards) {
+    items.push(
+      line({
+        id: "beams",
+        category: "sideboards",
+        name: "PT structural posts & rails",
+        qty: beamLf,
+        unit: "lf",
+        unitCost: UNIT_COSTS.pt4x4Lf * 0.55 + UNIT_COSTS.pt2x6Lf * 0.45,
+        notes: "Posts ~4 ft o.c., top/bottom rails",
+      }),
+    );
+    items.push(
+      line({
+        id: "trex",
+        category: "sideboards",
+        name: "Trex sideboards (nailed to frame)",
+        qty: trexLf,
+        unit: "lf",
+        unitCost: UNIT_COSTS.trexLf,
+        notes: `${courses} course(s) @ ${sideboardHeightIn}" face`,
+      }),
+    );
+    items.push(
+      line({
+        id: "hardware",
+        category: "sideboards",
+        name: "Fasteners, adhesive, anchors",
+        qty: 1,
+        unit: "kit",
+        unitCost: UNIT_COSTS.hardwareKit,
+      }),
+    );
+  }
 
   if (mode === "diy") {
     items.push(
@@ -581,6 +594,7 @@ export function calcPad(input: PadInputs): PadResult {
     capBlocks,
     trexLf,
     beamLf,
+    includeSideboards,
     items: active,
     subtotal,
     contingency,
@@ -608,82 +622,107 @@ export const CATEGORY_LABELS: Record<LineItem["category"], string> = {
   labor: "Labor",
 };
 
-export const BUILD_PHASES = [
-  {
-    id: 1,
-    title: "Before you dig",
-    steps: [
-      "Call 811 / DigAlert to locate utilities",
-      "Confirm with City of San Rafael Building Division (fill wall + hillside + pool proximity)",
-      "Stake pad corners; set string lines for grade",
-      "Order aggregates (A&S San Rafael or North Bay Materials), SRW, pipe, fabric, Trex, turf",
-    ],
-  },
-  {
-    id: 2,
-    title: "Cut & fill terrace",
-    steps: [
-      "Cut the uphill wedge (native soil) to finished subgrade",
-      "Place fill downhill in 6–8 in lifts; compact each to ~90–95%",
-      "Reuse cut soil only if clean & non-organic; else import engineered fill for structural zone",
-      "Verify cut/fill balance — no dirt import when soil is good",
-    ],
-  },
-  {
-    id: 3,
-    title: "Front wall (holds fill)",
-    steps: [
-      "Excavate leveling pad; place & compact 6 in Class II",
-      "Set base course ~6 in embedded; build SRW to grade",
-      "Install geogrid layers into compacted fill (~5 ft deep)",
-      "12 in drainage rock chimney + 4\" perf collector at base",
-      "Keep footing independent of existing pool wall",
-    ],
-  },
-  {
-    id: 4,
-    title: "Back wall (cut face)",
-    steps: [
-      "Leveling pad + SRW gravity wall into native cut",
-      "Drainage chimney + interceptor perf (hillside water)",
-      "Geogrid usually none/minimal at 3 ft — check manufacturer chart",
-    ],
-  },
-  {
-    id: 5,
-    title: "Drainage outlet",
-    steps: [
-      "Pitch both perf runs ~1% to the left",
-      "Tie into one solid 4\" outlet",
-      "Daylight downhill below the pad (or tie to existing drain)",
-    ],
-  },
-  {
-    id: 6,
-    title: "Turf base",
-    steps: [
-      "Woven geotextile over subgrade",
-      "4 in Class II, compact in lifts, ~1–1.5% fall to front drain",
-      "1 in DG / sharp sand bedding, screeded flat",
-    ],
-  },
-  {
-    id: 7,
-    title: "Structural frame + Trex sideboards",
-    steps: [
-      "Set PT posts & rails after walls are complete",
-      "Nail Trex boards to the wooden beams (sideboards)",
-      "Seal corners; leave expansion gaps per Trex guide",
-    ],
-  },
-  {
+export type BuildPhase = {
+  id: number;
+  title: string;
+  steps: string[];
+};
+
+/** Build sequence — Trex frame phase omitted when sideboards are off. */
+export function getBuildPhases(includeSideboards = true): BuildPhase[] {
+  const orderNote = includeSideboards
+    ? "Order aggregates (A&S San Rafael or North Bay Materials), SRW, pipe, fabric, Trex, turf"
+    : "Order aggregates (A&S San Rafael or North Bay Materials), SRW, pipe, fabric, turf (no Trex — walls only)";
+
+  const phases: BuildPhase[] = [
+    {
+      id: 1,
+      title: "Before you dig",
+      steps: [
+        "Call 811 / DigAlert to locate utilities",
+        "Confirm with City of San Rafael Building Division (fill wall + hillside + pool proximity)",
+        "Stake pad corners; set string lines for grade",
+        orderNote,
+      ],
+    },
+    {
+      id: 2,
+      title: "Cut & fill terrace",
+      steps: [
+        "Cut the uphill wedge (native soil) to finished subgrade",
+        "Place fill downhill in 6–8 in lifts; compact each to ~90–95%",
+        "Reuse cut soil only if clean & non-organic; else import engineered fill for structural zone",
+        "Verify cut/fill balance — no dirt import when soil is good",
+      ],
+    },
+    {
+      id: 3,
+      title: "Front wall (holds fill)",
+      steps: [
+        "Excavate leveling pad; place & compact 6 in Class II",
+        "Set base course ~6 in embedded; build SRW to grade",
+        "Install geogrid layers into compacted fill (~5 ft deep)",
+        '12 in drainage rock chimney + 4" perf collector at base',
+        "Keep footing independent of existing pool wall",
+      ],
+    },
+    {
+      id: 4,
+      title: "Back wall (cut face)",
+      steps: [
+        "Leveling pad + SRW gravity wall into native cut",
+        "Drainage chimney + interceptor perf (hillside water)",
+        "Geogrid usually none/minimal at 3 ft — check manufacturer chart",
+      ],
+    },
+    {
+      id: 5,
+      title: "Drainage outlet",
+      steps: [
+        "Pitch both perf runs ~1% to the left",
+        'Tie into one solid 4" outlet',
+        "Daylight downhill below the pad (or tie to existing drain)",
+      ],
+    },
+    {
+      id: 6,
+      title: "Turf base",
+      steps: [
+        "Woven geotextile over subgrade",
+        "4 in Class II, compact in lifts, ~1–1.5% fall to front drain",
+        "1 in DG / sharp sand bedding, screeded flat",
+      ],
+    },
+  ];
+
+  if (includeSideboards) {
+    phases.push({
+      id: 7,
+      title: "Structural frame + Trex sideboards",
+      steps: [
+        "Set PT posts & rails after walls are complete",
+        "Nail Trex boards to the wooden beams (sideboards)",
+        "Seal corners; leave expansion gaps per Trex guide",
+      ],
+    });
+  }
+
+  phases.push({
     id: 8,
     title: "Turf & finish",
     steps: [
       "Roll turf (pile grain consistent), cut, spike perimeter",
+      includeSideboards
+        ? "Spike / staple to sideboards where present"
+        : "Spike perimeter into compacted base / wall top (no Trex frame)",
       "Seam only if depth exceeds roll width",
       "Brush in ~1.5 lb/sq ft silica/coated infill",
       "Add portable futsal goals (~2 m × 3 m for youth)",
     ],
-  },
-] as const;
+  });
+
+  return phases;
+}
+
+/** @deprecated Prefer getBuildPhases() — kept for any static imports. */
+export const BUILD_PHASES = getBuildPhases(true);

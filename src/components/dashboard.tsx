@@ -27,10 +27,10 @@ import {
   YAxis,
 } from "recharts";
 import {
-  BUILD_PHASES,
   CATEGORY_LABELS,
   SITE,
   calcPad,
+  getBuildPhases,
   type LineItem,
   type Mode,
 } from "@/lib/pad-calc";
@@ -163,6 +163,7 @@ export function Dashboard() {
   const [sideboardHeightIn, setSideboardHeightIn] = useState<number>(
     SITE.defaultSideboardIn,
   );
+  const [includeSideboards, setIncludeSideboards] = useState(true);
   const [mode, setMode] = useState<Mode>("diy");
   const [helperDays, setHelperDays] = useState(0);
   const [checkedPhases, setCheckedPhases] = useState<Record<number, boolean>>(
@@ -179,8 +180,22 @@ export function Dashboard() {
         sideboardHeightIn,
         mode,
         helperDays,
+        includeSideboards,
       }),
-    [widthFt, depthFt, gradeDropFt, sideboardHeightIn, mode, helperDays],
+    [
+      widthFt,
+      depthFt,
+      gradeDropFt,
+      sideboardHeightIn,
+      mode,
+      helperDays,
+      includeSideboards,
+    ],
+  );
+
+  const buildPhases = useMemo(
+    () => getBuildPhases(includeSideboards),
+    [includeSideboards],
   );
 
   const byCategory = useMemo(() => {
@@ -199,7 +214,7 @@ export function Dashboard() {
   }, [result.items]);
 
   const shoppingAggregates = useMemo(() => {
-    return [
+    const rows = [
       {
         name: "Class II road base",
         qty: `${formatNumber(result.classIiCuYd + result.levelingPadCuYd, 1)} cu yd`,
@@ -230,13 +245,16 @@ export function Dashboard() {
         note: "Includes waste",
         itemId: "turf",
       },
-      {
+    ];
+    if (result.includeSideboards) {
+      rows.push({
         name: "Trex boards",
         qty: `${result.trexLf} lf`,
         note: "Sideboards on PT frame",
         itemId: "trex",
-      },
-    ];
+      });
+    }
+    return rows;
   }, [result]);
 
   function applyPreset(p: (typeof PRESETS)[number]) {
@@ -338,16 +356,41 @@ export function Dashboard() {
                 onChange={setGradeDropFt}
                 hint="Natural slope to level · wall height = half this"
               />
-              <DimSlider
-                label="Trex sideboard height"
-                value={sideboardHeightIn}
-                min={3.5}
-                max={11}
-                step={0.5}
-                unit="in"
-                onChange={setSideboardHeightIn}
-                hint="Boards nailed to PT posts & rails after walls"
-              />
+
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">Trex sideboards</p>
+                    <p className="text-xs text-muted-foreground">
+                      {includeSideboards
+                        ? "PT posts + Trex face around the pad"
+                        : "Off — retaining walls contain the turf (no frame)"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={includeSideboards}
+                    onCheckedChange={(on) => {
+                      setIncludeSideboards(on);
+                      if (!on && expandedPhase === 7) setExpandedPhase(null);
+                    }}
+                    aria-label="Include Trex sideboards"
+                  />
+                </div>
+                {includeSideboards ? (
+                  <div className="mt-3">
+                    <DimSlider
+                      label="Sideboard height"
+                      value={sideboardHeightIn}
+                      min={3.5}
+                      max={11}
+                      step={0.5}
+                      unit="in"
+                      onChange={setSideboardHeightIn}
+                      hint="Boards nailed to PT posts & rails after walls"
+                    />
+                  </div>
+                ) : null}
+              </div>
 
               <Separator />
 
@@ -945,7 +988,13 @@ export function Dashboard() {
                   </CardContent>
                 </Card>
 
-                {SUPPLIER_GROUPS.map((group) => {
+                {SUPPLIER_GROUPS.filter(
+                  (group) =>
+                    includeSideboards ||
+                    !group.keys.some((k) =>
+                      ["trex", "beams", "hardware"].includes(k),
+                    ),
+                ).map((group) => {
                   const best = getBestOption(group);
                   const thumbId = group.keys[0] ?? "class2";
                   return (
@@ -1042,7 +1091,7 @@ export function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <ol className="space-y-4">
-                    {BUILD_PHASES.map((phase) => {
+                    {buildPhases.map((phase) => {
                       const done = !!checkedPhases[phase.id];
                       const open = expandedPhase === phase.id;
                       return (
@@ -1138,8 +1187,12 @@ export function Dashboard() {
                   At {result.areaSqFt} sq ft (
                   {formatNumber(depthFt, 0)} × {formatNumber(widthFt, 0)}), this
                   is a skills / 2v2–3v3 strip — not a full court. Pair with
-                  portable goals (~2 m × 3 m), rounded Trex corners, and
-                  short-pile recreational turf with silica infill for ball roll.
+                  portable goals (~2 m × 3 m for youth)
+                  {includeSideboards
+                    ? ", rounded Trex corners,"
+                    : " (walls hold the edges — no Trex),"}{" "}
+                  and short-pile recreational turf with silica infill for ball
+                  roll.
                 </p>
               </div>
               <Badge
