@@ -85,12 +85,12 @@ export const FERN = {
   playWidthFt: 36,
   singlesWidthFt: 27,
   /** Recreational full pad with runback (common US residential) */
-  defaultLengthFt: 120,
-  defaultWidthFt: 60,
+  defaultLengthFt: 126,
+  defaultWidthFt: 64,
   minLengthFt: 110,
   minWidthFt: 56,
-  maxLengthFt: 130,
-  maxWidthFt: 66,
+  maxLengthFt: 140,
+  maxWidthFt: 70,
   defaultGradeDropFt: 4,
   netHeightIn: 36, // center
   netHeightPostIn: 42,
@@ -116,7 +116,7 @@ export const SURFACE_OPTIONS: {
       "Low maintenance once cured",
     ],
     multiSport:
-      "Great tennis; futsal OK with portable goals when net is down (hard underfoot).",
+      "Great tennis; futsal OK with portable goals at fence ends when net is down (hard underfoot).",
   },
   {
     id: "modular",
@@ -144,7 +144,7 @@ export const SURFACE_OPTIONS: {
       "Green look year-round",
     ],
     multiSport:
-      "Best for futsal ends + open play; tennis bounce is slower than hard court.",
+      "Best for futsal on the full pad + open play; tennis bounce is slower than hard court.",
   },
 ];
 
@@ -512,7 +512,7 @@ export function calcCourt(input: CourtInputs): CourtResult {
         qty: 1,
         unit: "pair",
         unitCost: UNIT.futsalGoalsPair,
-        notes: "Place on baseline ends when net is down",
+        notes: "Place at fence-end centers — full pad is the futsal field (not tennis baselines)",
         optional: true,
       }),
     );
@@ -595,7 +595,7 @@ export function calcCourt(input: CourtInputs): CourtResult {
     "Call 811 before digging. Confirm permits for grading / fence height with City of San Rafael.",
   );
   warnings.push(
-    "Multi-sport: drop or remove the tennis net and place portable futsal goals on the baselines.",
+    "Multi-sport futsal: drop the tennis net and place portable goals at the center of each fence end so the field is the full overall pad — not the 78×36 tennis lines.",
   );
 
   const withinRegulationPad =
@@ -699,7 +699,7 @@ export function getCourtBuildPhases(surface: CourtSurface, includeFence: boolean
       steps: [
         "Set net posts on regulation centerline",
         "Hang net — designed to drop/remove for other sports",
-        "Optional: portable futsal goals on baseline ends",
+        "Optional: portable futsal goals at fence-end centers (full pad = field)",
       ],
     },
   ];

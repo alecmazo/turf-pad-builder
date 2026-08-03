@@ -260,7 +260,7 @@ export const COURT_SUPPLIER_GROUPS: CourtSupplierGroup[] = [
   {
     keys: ["futsal-goals"],
     title: "Portable futsal goals",
-    tip: "Park on the baselines when the tennis net is down — multi-sport mode for Fern.",
+    tip: "Park goals at the center of each fence end (not on tennis baselines) so the full pad is the futsal field.",
     options: [
       {
         vendor: "Amazon",

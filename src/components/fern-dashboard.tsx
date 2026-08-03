@@ -508,33 +508,60 @@ function CourtPlan({
 
         {showFutsalGoals ? (
           <>
+            {/* Futsal uses the FULL fenced pad — goals at fence-end centers, not tennis baselines */}
             <rect
-              x={leftBaseX - 7}
-              y={midY - 16}
-              width={6}
-              height={32}
+              x={mx}
+              y={my}
+              width={padW}
+              height={padH}
+              fill="none"
+              stroke="var(--color-success)"
+              strokeWidth={1.5}
+              strokeDasharray="5 4"
+              opacity={0.85}
+            />
+            {/* Left fence-end goal (center of short end) */}
+            <rect
+              x={mx - (includeFence ? 12 : 6)}
+              y={my + padH / 2 - 18}
+              width={8}
+              height={36}
               fill="var(--color-success)"
-              opacity={0.9}
+              opacity={0.95}
               rx={1}
             />
+            {/* Right fence-end goal */}
             <rect
-              x={rightBaseX + 1}
-              y={midY - 16}
-              width={6}
-              height={32}
+              x={mx + padW + (includeFence ? 4 : -2)}
+              y={my + padH / 2 - 18}
+              width={8}
+              height={36}
               fill="var(--color-success)"
-              opacity={0.9}
+              opacity={0.95}
               rx={1}
             />
             <text
-              x={leftBaseX - 14}
-              y={midY + 48}
+              x={mx - 18}
+              y={my + padH / 2 + 4}
+              textAnchor="middle"
               fill="var(--color-success)"
               fontSize={8}
               fontFamily="var(--font-sans)"
-              transform={`rotate(-90 ${leftBaseX - 14} ${midY + 48})`}
+              fontWeight={600}
+              transform={`rotate(-90 ${mx - 18} ${my + padH / 2 + 4})`}
             >
-              futsal goal
+              futsal goal @ fence
+            </text>
+            <text
+              x={W / 2}
+              y={my + 12}
+              textAnchor="middle"
+              fill="var(--color-success)"
+              fontSize={9}
+              fontFamily="var(--font-sans)"
+              fontWeight={600}
+            >
+              futsal field = full pad (net down) · goals at fence ends
             </text>
           </>
         ) : null}
@@ -548,7 +575,7 @@ function CourtPlan({
           fontFamily="var(--font-sans)"
         >
           Overall {formatNumber(lengthFt, 0)} × {formatNumber(widthFt, 0)} ft
-          pad · regulation markings ·
+          pad · regulation tennis markings ·
           {includeFence ? ` ${fenceHeightFt}′ fence` : " no fence"}
         </text>
       </svg>
@@ -647,9 +674,9 @@ export function FernDashboard() {
               Tennis Court Builder
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Full-size court pad (play 78×36 inside ~120×60) with cut/fill
-              leveling, three surface systems, toggleable fence, and futsal when
-              the net is down.
+              Full-size court pad (play 78×36 inside a larger overall pad) with
+              cut/fill leveling, three surface systems, toggleable fence, and
+              futsal on the full enclosure when the net is down.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -672,8 +699,9 @@ export function FernDashboard() {
                 Court pad size
               </CardTitle>
               <CardDescription>
-                Playing lines stay 78×36 doubles. Overall pad adds runback —
-                residential default 120×60.
+                Playing lines stay 78×36 doubles. Overall pad is the runback —
+                and the futsal field when goals sit at the fence ends. Default{" "}
+                {FERN.defaultLengthFt}×{FERN.defaultWidthFt}.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -851,7 +879,7 @@ export function FernDashboard() {
                 <div>
                   <p className="text-sm font-medium">Futsal goals</p>
                   <p className="text-xs text-muted-foreground">
-                    Portable pair for baseline ends
+                    At fence-end centers — full pad is the field
                   </p>
                 </div>
                 <Switch
@@ -997,8 +1025,10 @@ export function FernDashboard() {
                     Court plan — tennis + futsal
                   </CardTitle>
                   <CardDescription>
-                    Drop the net, park goals on the baselines for futsal /
-                    multi-sport.
+                    Drop the net for multi-sport. Futsal uses the{" "}
+                    <strong>full overall pad</strong> with portable goals at the{" "}
+                    <strong>fence ends</strong> (center of each short side) — not
+                    on the tennis baselines.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1425,11 +1455,14 @@ export function FernDashboard() {
             <CardContent className="p-5">
               <p className="font-medium">Multi-sport on Fern</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Regulation tennis with the net up. For futsal / open play: drop
-                or roll the net, place portable goals on the baselines, and use
-                the full {result.overallAreaSqFt} sq ft pad. Modular tiles and
-                turf are friendliest for that; acrylic stays best for pure
-                tennis bounce.
+                Regulation tennis with the net up. For futsal: drop or remove the
+                net and place portable goals at the <strong>center of each
+                fence end</strong> so the field is the full{" "}
+                {formatNumber(lengthFt, 0)}×{formatNumber(widthFt, 0)} ft pad
+                (not the 78×36 tennis lines). Size the overall pad large enough
+                for the game you want — bump length/width above the tennis
+                minimum. Modular tiles and turf are friendliest underfoot;
+                acrylic stays best for pure tennis bounce.
               </p>
             </CardContent>
           </Card>

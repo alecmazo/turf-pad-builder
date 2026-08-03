@@ -775,119 +775,165 @@ function AnimNetMulti({
 }: SceneProps & { includeFutsalGoals: boolean }) {
   return (
     <g className={active ? "anim-net" : undefined}>
-      {/* Court plan with net */}
+      {/* Full pad / fence envelope = futsal field */}
       <rect
-        x="50"
-        y="40"
-        width="300"
-        height="130"
+        x="30"
+        y="35"
+        width="340"
+        height="145"
         fill="var(--color-primary)"
-        opacity=".15"
+        opacity=".08"
         rx="2"
       />
-      <MiniCourtLines x={70} y={55} w={260} h={100} />
+      <rect
+        x="30"
+        y="35"
+        width="340"
+        height="145"
+        fill="none"
+        stroke="var(--color-wall)"
+        strokeWidth="3"
+        className="anim-draw"
+      />
+      <text
+        x="200"
+        y="28"
+        textAnchor="middle"
+        fill="var(--color-muted-foreground)"
+        fontSize="8"
+        fontFamily="var(--font-sans)"
+      >
+        fence / full pad = futsal field
+      </text>
+
+      {/* Tennis play (smaller, centered) — net up mode */}
+      <rect
+        x="90"
+        y="55"
+        width="220"
+        height="100"
+        fill="var(--color-primary)"
+        opacity=".12"
+      />
+      <MiniCourtLines x={90} y={55} w={220} h={100} opacity={0.55} />
 
       <g {...matProps("net")}>
-        {/* Posts */}
+        {/* Center net posts on tennis court */}
         <rect
           x="196"
-          y="45"
+          y="50"
           width="8"
-          height="120"
+          height="110"
           fill="var(--color-pipe)"
           className="anim-post-1"
         />
-        {/* Mesh */}
         <g className="anim-fade-in anim-delay-1">
-          {[55, 70, 85, 100, 115, 130, 145].map((y) => (
+          {[60, 75, 90, 105, 120, 135, 150].map((y) => (
             <line
               key={y}
-              x1="100"
+              x1="120"
               y1={y}
-              x2="300"
+              x2="280"
               y2={y}
               stroke="var(--color-accent)"
               strokeWidth="1"
-              opacity=".7"
+              opacity=".65"
             />
           ))}
-          {[110, 130, 150, 170, 190, 210, 230, 250, 270, 290].map((x) => (
+          {[130, 150, 170, 190, 210, 230, 250, 270].map((x) => (
             <line
               key={x}
               x1={x}
-              y1="55"
+              y1="60"
               x2={x}
-              y2="145"
+              y2="150"
               stroke="var(--color-accent)"
               strokeWidth="1"
-              opacity=".5"
+              opacity=".45"
             />
           ))}
         </g>
         <line
-          x1="100"
-          y1="55"
-          x2="300"
-          y2="55"
+          x1="120"
+          y1="58"
+          x2="280"
+          y2="58"
           stroke="var(--color-foreground)"
           strokeWidth="3"
           className="anim-draw"
         />
         <text
           x="200"
-          y="35"
+          y="48"
           textAnchor="middle"
           fill="var(--color-accent)"
-          fontSize="10"
+          fontSize="9"
           fontFamily="var(--font-sans)"
           fontWeight="600"
           className="anim-fade-in"
         >
-          net posts + net (drop for multi-sport)
+          tennis net (drop / remove for futsal)
         </text>
       </g>
 
       {includeFutsalGoals ? (
         <g {...matProps("futsal-goals")}>
+          {/* Goals at FENCE ends — center of each short side, not tennis baselines */}
           <rect
-            x="62"
+            x="24"
             y="85"
-            width="10"
-            height="40"
+            width="12"
+            height="48"
+            rx="1"
             fill="var(--color-success)"
             className="anim-pop anim-delay-2"
           />
           <rect
-            x="328"
+            x="364"
             y="85"
-            width="10"
-            height="40"
+            width="12"
+            height="48"
+            rx="1"
             fill="var(--color-success)"
             className="anim-pop anim-delay-2"
+          />
+          {/* Dashed field using full pad */}
+          <rect
+            x="36"
+            y="42"
+            width="328"
+            height="130"
+            fill="none"
+            stroke="var(--color-success)"
+            strokeWidth="1.5"
+            strokeDasharray="4 3"
+            className="anim-fade-in anim-delay-2"
+            opacity=".8"
           />
           <text
             x="200"
-            y="185"
+            y="188"
             textAnchor="middle"
             fill="var(--color-success)"
             fontSize="9"
             fontFamily="var(--font-sans)"
+            fontWeight="600"
             className="anim-fade-in anim-delay-2"
           >
-            portable futsal goals on baselines
+            goals @ fence-end centers · field = full pad
           </text>
         </g>
       ) : null}
 
       <text
         x="200"
-        y="210"
+        y="212"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
         fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Tennis net up · futsal when net is down
+        Not on tennis baselines — use the enclosure ends
       </text>
     </g>
   );
