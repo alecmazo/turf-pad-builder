@@ -56,6 +56,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlanView } from "@/components/plan-view";
 import { SectionView } from "@/components/section-view";
+import { MaterialThumb } from "@/components/material-thumb";
+import { BuildStepAnimation } from "@/components/build-step-animation";
 
 const PRESETS: {
   label: string;
@@ -166,6 +168,7 @@ export function Dashboard() {
   const [checkedPhases, setCheckedPhases] = useState<Record<number, boolean>>(
     {},
   );
+  const [expandedPhase, setExpandedPhase] = useState<number | null>(1);
 
   const result = useMemo(
     () =>
@@ -779,27 +782,34 @@ export function Dashboard() {
                         return (
                           <div
                             key={a.name}
-                            className="rounded-lg border border-border bg-muted/40 px-3 py-2"
+                            className="flex gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2.5"
                           >
-                            <p className="text-sm font-medium">{a.name}</p>
-                            <p className="font-mono text-sm tabular-nums text-primary">
-                              {a.qty}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {a.note}
-                            </p>
-                            {best ? (
-                              <a
-                                href={best.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                              >
-                                <Star className="size-3 fill-primary" />
-                                {best.vendor}
-                                <ExternalLink className="size-3" />
-                              </a>
-                            ) : null}
+                            <MaterialThumb
+                              itemId={a.itemId}
+                              size="md"
+                              alt={a.name}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium">{a.name}</p>
+                              <p className="font-mono text-sm tabular-nums text-primary">
+                                {a.qty}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {a.note}
+                              </p>
+                              {best ? (
+                                <a
+                                  href={best.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                                >
+                                  <Star className="size-3 fill-primary" />
+                                  {best.vendor}
+                                  <ExternalLink className="size-3" />
+                                </a>
+                              ) : null}
+                            </div>
                           </div>
                         );
                       })}
@@ -807,7 +817,7 @@ export function Dashboard() {
                   </div>
 
                   <div className="w-full max-w-full overflow-x-auto overscroll-x-contain">
-                    <table className="w-full min-w-[520px] text-left text-sm">
+                    <table className="w-full min-w-[560px] text-left text-sm">
                       <thead>
                         <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
                           <th className="pb-2 pr-2 font-medium">Item + buy</th>
@@ -823,12 +833,22 @@ export function Dashboard() {
                             className="border-b border-border/50 align-top"
                           >
                             <td className="py-2.5 pr-2">
-                              <p className="font-medium">{item.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {CATEGORY_LABELS[item.category]}
-                                {item.notes ? ` · ${item.notes}` : ""}
-                              </p>
-                              <BuyLinks itemId={item.id} />
+                              <div className="flex gap-3">
+                                <MaterialThumb
+                                  itemId={item.id}
+                                  size="sm"
+                                  alt={item.name}
+                                  className="mt-0.5"
+                                />
+                                <div className="min-w-0">
+                                  <p className="font-medium">{item.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {CATEGORY_LABELS[item.category]}
+                                    {item.notes ? ` · ${item.notes}` : ""}
+                                  </p>
+                                  <BuyLinks itemId={item.id} />
+                                </div>
+                              </div>
                             </td>
                             <td className="py-2.5 pr-2 whitespace-nowrap font-mono tabular-nums">
                               {formatNumber(item.qty, item.qty >= 20 ? 0 : 1)}{" "}
@@ -927,13 +947,23 @@ export function Dashboard() {
 
                 {SUPPLIER_GROUPS.map((group) => {
                   const best = getBestOption(group);
+                  const thumbId = group.keys[0] ?? "class2";
                   return (
                     <Card key={group.title} className="min-w-0">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">
-                          {group.title}
-                        </CardTitle>
-                        <CardDescription>{group.tip}</CardDescription>
+                        <div className="flex items-start gap-3">
+                          <MaterialThumb
+                            itemId={thumbId}
+                            size="lg"
+                            alt={group.title}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-base">
+                              {group.title}
+                            </CardTitle>
+                            <CardDescription>{group.tip}</CardDescription>
+                          </div>
+                        </div>
                       </CardHeader>
                       <CardContent>
                         <ul className="divide-y divide-border">
@@ -1006,37 +1036,51 @@ export function Dashboard() {
                     Build sequence
                   </CardTitle>
                   <CardDescription>
-                    Follow the walls-before-turf order from the spec. Check off
-                    as you go — saved only in this session.
+                    Each step has an animated how-to with the materials you use.
+                    Check off as you go — saved only in this session.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ol className="space-y-3">
+                  <ol className="space-y-4">
                     {BUILD_PHASES.map((phase) => {
                       const done = !!checkedPhases[phase.id];
+                      const open = expandedPhase === phase.id;
                       return (
                         <li
                           key={phase.id}
-                          className="rounded-xl border border-border bg-card p-4"
+                          className="overflow-hidden rounded-xl border border-border bg-card"
                         >
-                          <button
-                            type="button"
-                            className="flex w-full items-start gap-3 text-left"
-                            onClick={() =>
-                              setCheckedPhases((s) => ({
-                                ...s,
-                                [phase.id]: !s[phase.id],
-                              }))
-                            }
-                          >
-                            {done ? (
-                              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" />
-                            ) : (
-                              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-border font-mono text-xs text-muted-foreground">
-                                {phase.id}
-                              </span>
-                            )}
-                            <div className="min-w-0 flex-1">
+                          <div className="flex items-start gap-3 p-4">
+                            <button
+                              type="button"
+                              className="mt-0.5 shrink-0"
+                              aria-label={
+                                done
+                                  ? `Mark phase ${phase.id} incomplete`
+                                  : `Mark phase ${phase.id} complete`
+                              }
+                              onClick={() =>
+                                setCheckedPhases((s) => ({
+                                  ...s,
+                                  [phase.id]: !s[phase.id],
+                                }))
+                              }
+                            >
+                              {done ? (
+                                <CheckCircle2 className="size-5 text-success" />
+                              ) : (
+                                <span className="flex size-5 items-center justify-center rounded-full border-2 border-border font-mono text-xs text-muted-foreground">
+                                  {phase.id}
+                                </span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              className="min-w-0 flex-1 text-left"
+                              onClick={() =>
+                                setExpandedPhase(open ? null : phase.id)
+                              }
+                            >
                               <p
                                 className={
                                   done
@@ -1046,15 +1090,35 @@ export function Dashboard() {
                               >
                                 {phase.title}
                               </p>
-                              <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                {open
+                                  ? "Hide animation"
+                                  : "Show how-to animation"}
+                                {" · "}
+                                {phase.steps.length} steps
+                              </p>
+                            </button>
+                          </div>
+
+                          {open ? (
+                            <div className="space-y-3 border-t border-border px-4 pb-4 pt-3">
+                              <BuildStepAnimation
+                                phaseId={phase.id}
+                                active={open}
+                              />
+                              <ul className="space-y-1.5 text-sm text-muted-foreground">
                                 {phase.steps.map((step) => (
-                                  <li key={step} className="leading-relaxed">
-                                    · {step}
+                                  <li
+                                    key={step}
+                                    className="flex gap-2 leading-relaxed"
+                                  >
+                                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary/60" />
+                                    {step}
                                   </li>
                                 ))}
                               </ul>
                             </div>
-                          </button>
+                          ) : null}
                         </li>
                       );
                     })}
