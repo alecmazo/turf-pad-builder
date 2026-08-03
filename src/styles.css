@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --font-sans: "DM Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display: "Fraunces", "Georgia", "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-background: #f4f1ea;
+  --color-foreground: #1c1b19;
+  --color-card: #fffcf7;
+  --color-card-foreground: #1c1b19;
+  --color-muted: #e8e3d8;
+  --color-muted-foreground: #6b6560;
+  --color-border: #d9d2c5;
+  --color-primary: #2f5d3a;
+  --color-primary-foreground: #f7faf6;
+  --color-secondary: #e4ddd0;
+  --color-secondary-foreground: #2a2723;
+  --color-accent: #c45c26;
+  --color-accent-foreground: #fffaf5;
+  --color-ring: #2f5d3a;
+  --color-destructive: #a33b2b;
+  --color-destructive-foreground: #fff8f6;
+  --color-success: #2f6b45;
+  --color-warn: #9a6b1f;
+  --color-hill: #c4b59a;
+  --color-turf: #8fbc8a;
+  --color-turf-deep: #5a8f5a;
+  --color-drain: #3a6b8c;
+  --color-wall: #7a756c;
+  --color-pool: #9ec9d8;
+  --color-pipe: #1e3d3a;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    margin: 0;
+    min-height: 100dvh;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
