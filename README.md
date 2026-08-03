@@ -2,6 +2,10 @@
 
 Interactive dashboard for planning a backyard hillside cut-and-fill turf pad / youth futsal terrace.
 
+## Live site
+
+**https://alecmazo.github.io/turf-pad-builder/**
+
 ## Features
 
 - Live pad sizing (width, depth, grade drop, Trex sideboard height)
@@ -13,15 +17,21 @@ Interactive dashboard for planning a backyard hillside cut-and-fill turf pad / y
 
 ## Stack
 
-React 19 · TypeScript · Vite · TanStack Start · Tailwind v4 · Recharts
+React 19 · TypeScript · Vite · Tailwind v4 · Recharts
 
 ## Develop
 
 ```bash
 npm install
-npm run dev    # http://localhost:8080
-npm run build
-npm run typecheck
+npm run dev         # TanStack Start app (Grok / local)
+npm run build:spa   # static site for GitHub Pages
+```
+
+## Deploy (GitHub Pages)
+
+```bash
+npm run build:spa
+# push contents of dist-spa/ to the gh-pages branch
 ```
 
 ## Notes

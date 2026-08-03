@@ -1,5 +1,5 @@
 {
-  "name": "app-builder-workspace",
+  "name": "turf-pad-builder",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -9,9 +9,11 @@
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 8080",
     "build": "vite build && npm run db:migrate",
+    "build:spa": "vite build --config vite.config.spa.ts",
     "db:migrate": "node scripts/migrate.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview --host 0.0.0.0 --port 8080",
+    "preview:spa": "vite preview --config vite.config.spa.ts --host 0.0.0.0 --port 4175",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
@@ -90,4 +92,3 @@
     "vite": "^8.1.0"
   }
 }
-

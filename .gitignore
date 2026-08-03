@@ -18,3 +18,4 @@ AGENTS.md
 .node_modules.lock
 vendor/
 src/routeTree.gen.ts
+dist-spa/
