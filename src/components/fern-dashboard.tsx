@@ -55,6 +55,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MaterialThumb } from "@/components/material-thumb";
+import { CourtBuildAnimation } from "@/components/court-build-animation";
 
 const CAT_COLORS: Record<CourtLineItem["category"], string> = {
   earthwork: "#8a7f6e",
@@ -573,6 +574,7 @@ export function FernDashboard() {
   const [checkedPhases, setCheckedPhases] = useState<Record<number, boolean>>(
     {},
   );
+  const [expandedPhase, setExpandedPhase] = useState<number | null>(1);
 
   const result = useMemo(
     () =>
@@ -1322,50 +1324,94 @@ export function FernDashboard() {
                     <Sparkles className="size-4 text-primary" />
                     Build sequence — Fern
                   </CardTitle>
+                  <CardDescription>
+                    Expand each phase for a how-to animation. Tap materials
+                    under the animation to locate them on the finished frame.
+                    Surface steps follow your selected system (
+                    {result.surfaceLabel}).
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ol className="space-y-3">
+                  <ol className="space-y-4">
                     {phases.map((phase) => {
                       const done = !!checkedPhases[phase.id];
+                      const open = expandedPhase === phase.id;
                       return (
                         <li
                           key={phase.id}
-                          className="rounded-xl border border-border p-4"
+                          className="overflow-hidden rounded-xl border border-border bg-card"
                         >
-                          <button
-                            type="button"
-                            className="flex w-full items-start gap-3 text-left"
-                            onClick={() =>
-                              setCheckedPhases((s) => ({
-                                ...s,
-                                [phase.id]: !s[phase.id],
-                              }))
-                            }
-                          >
-                            {done ? (
-                              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" />
-                            ) : (
-                              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-border font-mono text-xs">
-                                {phase.id}
-                              </span>
-                            )}
-                            <div>
+                          <div className="flex items-start gap-3 p-4">
+                            <button
+                              type="button"
+                              className="mt-0.5 shrink-0"
+                              aria-label={
+                                done
+                                  ? `Mark phase ${phase.id} incomplete`
+                                  : `Mark phase ${phase.id} complete`
+                              }
+                              onClick={() =>
+                                setCheckedPhases((s) => ({
+                                  ...s,
+                                  [phase.id]: !s[phase.id],
+                                }))
+                              }
+                            >
+                              {done ? (
+                                <CheckCircle2 className="size-5 text-success" />
+                              ) : (
+                                <span className="flex size-5 items-center justify-center rounded-full border-2 border-border font-mono text-xs text-muted-foreground">
+                                  {phase.id}
+                                </span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              className="min-w-0 flex-1 text-left"
+                              onClick={() =>
+                                setExpandedPhase(open ? null : phase.id)
+                              }
+                            >
                               <p
                                 className={
                                   done
                                     ? "font-medium text-muted-foreground line-through"
-                                    : "font-medium"
+                                    : "font-medium text-foreground"
                                 }
                               >
                                 {phase.title}
                               </p>
-                              <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                {open
+                                  ? "Hide animation"
+                                  : "Show how-to animation"}
+                                {" · "}
+                                {phase.steps.length} steps
+                              </p>
+                            </button>
+                          </div>
+
+                          {open ? (
+                            <div className="space-y-3 border-t border-border px-4 pb-4 pt-3">
+                              <CourtBuildAnimation
+                                phaseId={phase.id}
+                                surface={surface}
+                                active={open}
+                                includeFutsalGoals={includeFutsalGoals}
+                              />
+                              <ul className="space-y-1.5 text-sm text-muted-foreground">
                                 {phase.steps.map((step) => (
-                                  <li key={step}>· {step}</li>
+                                  <li
+                                    key={step}
+                                    className="flex gap-2 leading-relaxed"
+                                  >
+                                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary/60" />
+                                    {step}
+                                  </li>
                                 ))}
                               </ul>
                             </div>
-                          </button>
+                          ) : null}
                         </li>
                       );
                     })}

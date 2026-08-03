@@ -80,6 +80,8 @@ export const MATERIAL_LABELS: Record<string, string> = {
   modular: "Sport tiles",
   asphalt: "Asphalt base",
   fence: "Chain-link fence",
+  "gate-s": "Walk gate",
+  "gate-d": "Double gate",
   windscreen: "Windscreen",
   net: "Tennis net",
   lines: "Court lines",
