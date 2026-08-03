@@ -773,295 +773,608 @@ function AnimNetMulti({
   matProps,
   includeFutsalGoals,
 }: SceneProps & { includeFutsalGoals: boolean }) {
+  /**
+   * Three clear sequential panels (not stacked on one court):
+   *  1) Set posts + hang net
+   *  2) Drop net for multi-sport
+   *  3) Goals at fence-end centers · full pad field
+   */
   return (
     <g className={active ? "anim-net" : undefined}>
-      {/* Full pad / fence envelope = futsal field */}
-      <rect
-        x="30"
-        y="35"
-        width="340"
-        height="145"
-        fill="var(--color-primary)"
-        opacity=".08"
-        rx="2"
-      />
-      <rect
-        x="30"
-        y="35"
-        width="340"
-        height="145"
-        fill="none"
-        stroke="var(--color-wall)"
-        strokeWidth="3"
-        className="anim-draw"
-      />
-      <text
-        x="200"
-        y="28"
-        textAnchor="middle"
-        fill="var(--color-muted-foreground)"
-        fontSize="8"
-        fontFamily="var(--font-sans)"
-      >
-        fence / full pad = futsal field
-      </text>
+      {/* Panel frames */}
+      <rect x="8" y="22" width="120" height="160" rx="8" fill="var(--color-card)" stroke="var(--color-border)" />
+      <rect x="140" y="22" width="120" height="160" rx="8" fill="var(--color-card)" stroke="var(--color-border)" />
+      <rect x="272" y="22" width="120" height="160" rx="8" fill="var(--color-card)" stroke="var(--color-border)" />
 
-      {/* Tennis play (smaller, centered) — net up mode */}
-      <rect
-        x="90"
-        y="55"
-        width="220"
-        height="100"
-        fill="var(--color-primary)"
-        opacity=".12"
-      />
-      <MiniCourtLines x={90} y={55} w={220} h={100} opacity={0.55} />
+      {/* Step numbers */}
+      {[
+        { x: 18, n: "1" },
+        { x: 150, n: "2" },
+        { x: 282, n: "3" },
+      ].map((s) => (
+        <g key={s.n}>
+          <circle cx={s.x + 8} cy={34} r="8" fill="var(--color-primary)" className="anim-pop" />
+          <text
+            x={s.x + 8}
+            y={37}
+            textAnchor="middle"
+            fill="var(--color-primary-foreground)"
+            fontSize="9"
+            fontFamily="var(--font-sans)"
+            fontWeight="700"
+          >
+            {s.n}
+          </text>
+        </g>
+      ))}
 
+      {/* ── Panel 1: tennis net up ── */}
       <g {...matProps("net")}>
-        {/* Center net posts on tennis court */}
         <rect
-          x="196"
+          x="22"
           y="50"
-          width="8"
-          height="110"
+          width="92"
+          height="70"
+          fill="#3A7BC8"
+          opacity="0.35"
+          rx="2"
+          className="anim-fade-in"
+        />
+        {/* posts */}
+        <rect
+          x="64"
+          y="48"
+          width="5"
+          height="74"
           fill="var(--color-pipe)"
           className="anim-post-1"
         />
+        <rect
+          x="64"
+          y="48"
+          width="5"
+          height="8"
+          fill="var(--color-foreground)"
+          className="anim-post-1"
+        />
+        {/* mesh hanging from top */}
         <g className="anim-fade-in anim-delay-1">
-          {[60, 75, 90, 105, 120, 135, 150].map((y) => (
+          {[58, 66, 74, 82, 90, 98, 106].map((y) => (
             <line
               key={y}
-              x1="120"
+              x1="28"
               y1={y}
-              x2="280"
+              x2="108"
               y2={y}
               stroke="var(--color-accent)"
               strokeWidth="1"
-              opacity=".65"
             />
           ))}
-          {[130, 150, 170, 190, 210, 230, 250, 270].map((x) => (
+          {[36, 48, 60, 72, 84, 96].map((x) => (
             <line
               key={x}
               x1={x}
-              y1="60"
+              y1="54"
               x2={x}
-              y2="150"
+              y2="112"
               stroke="var(--color-accent)"
-              strokeWidth="1"
-              opacity=".45"
+              strokeWidth="0.8"
+              opacity="0.7"
             />
           ))}
         </g>
         <line
-          x1="120"
-          y1="58"
-          x2="280"
-          y2="58"
+          x1="28"
+          y1="54"
+          x2="108"
+          y2="54"
           stroke="var(--color-foreground)"
-          strokeWidth="3"
+          strokeWidth="2.5"
           className="anim-draw"
         />
         <text
-          x="200"
-          y="48"
+          x="68"
+          y="140"
           textAnchor="middle"
-          fill="var(--color-accent)"
+          fill="var(--color-foreground)"
           fontSize="9"
           fontFamily="var(--font-sans)"
           fontWeight="600"
           className="anim-fade-in"
         >
-          tennis net (drop / remove for futsal)
+          Set posts + net
+        </text>
+        <text
+          x="68"
+          y="154"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+        >
+          tennis mode
         </text>
       </g>
 
-      {includeFutsalGoals ? (
-        <g {...matProps("futsal-goals")}>
-          {/* Goals at FENCE ends — center of each short side, not tennis baselines */}
+      {/* ── Panel 2: net dropped ── */}
+      <g>
+        <rect
+          x="154"
+          y="50"
+          width="92"
+          height="70"
+          fill="#3A7BC8"
+          opacity="0.35"
+          rx="2"
+          className="anim-fade-in anim-delay-1"
+        />
+        {/* posts remain */}
+        <rect
+          x="196"
+          y="48"
+          width="5"
+          height="74"
+          fill="var(--color-pipe)"
+          opacity="0.5"
+          className="anim-fade-in anim-delay-1"
+        />
+        {/* net rolled/dropped at bottom */}
+        <g {...matProps("net")}>
           <rect
-            x="24"
-            y="85"
-            width="12"
-            height="48"
-            rx="1"
-            fill="var(--color-success)"
-            className="anim-pop anim-delay-2"
+            x="162"
+            y="108"
+            width="76"
+            height="10"
+            rx="3"
+            fill="var(--color-accent)"
+            className="anim-fade-in anim-delay-2"
           />
-          <rect
-            x="364"
-            y="85"
-            width="12"
-            height="48"
-            rx="1"
-            fill="var(--color-success)"
-            className="anim-pop anim-delay-2"
-          />
-          {/* Dashed field using full pad */}
-          <rect
-            x="36"
-            y="42"
-            width="328"
-            height="130"
+          <path
+            d="M170 108 Q180 98 190 108 Q200 98 210 108 Q220 98 230 108"
             fill="none"
-            stroke="var(--color-success)"
+            stroke="var(--color-accent)"
             strokeWidth="1.5"
-            strokeDasharray="4 3"
-            className="anim-fade-in anim-delay-2"
-            opacity=".8"
+            className="anim-draw anim-delay-1"
           />
-          <text
-            x="200"
-            y="188"
-            textAnchor="middle"
-            fill="var(--color-success)"
-            fontSize="9"
-            fontFamily="var(--font-sans)"
-            fontWeight="600"
-            className="anim-fade-in anim-delay-2"
-          >
-            goals @ fence-end centers · field = full pad
-          </text>
         </g>
-      ) : null}
+        <text
+          x="200"
+          y="140"
+          textAnchor="middle"
+          fill="var(--color-foreground)"
+          fontSize="9"
+          fontFamily="var(--font-sans)"
+          fontWeight="600"
+          className="anim-fade-in anim-delay-1"
+        >
+          Drop / remove net
+        </text>
+        <text
+          x="200"
+          y="154"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+        >
+          open the full pad
+        </text>
+      </g>
+
+      {/* ── Panel 3: goals at fence ends ── */}
+      <g {...matProps("futsal-goals")}>
+        {/* fence outline = field */}
+        <rect
+          x="286"
+          y="48"
+          width="92"
+          height="74"
+          fill="var(--color-success)"
+          opacity="0.1"
+          rx="2"
+          className="anim-fade-in anim-delay-2"
+        />
+        <rect
+          x="286"
+          y="48"
+          width="92"
+          height="74"
+          fill="none"
+          stroke="var(--color-wall)"
+          strokeWidth="2.5"
+          className="anim-draw anim-delay-2"
+        />
+        {/* small tennis lines ghosted */}
+        <rect
+          x="304"
+          y="62"
+          width="56"
+          height="46"
+          fill="none"
+          stroke="var(--color-muted-foreground)"
+          strokeWidth="0.8"
+          strokeDasharray="2 2"
+          opacity="0.5"
+        />
+        {includeFutsalGoals ? (
+          <>
+            <rect
+              x="282"
+              y="70"
+              width="8"
+              height="30"
+              rx="1"
+              fill="var(--color-success)"
+              className="anim-pop anim-delay-2"
+            />
+            <rect
+              x="374"
+              y="70"
+              width="8"
+              height="30"
+              rx="1"
+              fill="var(--color-success)"
+              className="anim-pop anim-delay-2"
+            />
+          </>
+        ) : (
+          <text
+            x="332"
+            y="90"
+            textAnchor="middle"
+            fill="var(--color-muted-foreground)"
+            fontSize="8"
+            fontFamily="var(--font-sans)"
+          >
+            goals off
+          </text>
+        )}
+        <text
+          x="332"
+          y="140"
+          textAnchor="middle"
+          fill="var(--color-success)"
+          fontSize="9"
+          fontFamily="var(--font-sans)"
+          fontWeight="600"
+          className="anim-fade-in anim-delay-2"
+        >
+          Goals @ fence ends
+        </text>
+        <text
+          x="332"
+          y="154"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+        >
+          not tennis baselines
+        </text>
+      </g>
 
       <text
         x="200"
-        y="212"
+        y="208"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
         fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Not on tennis baselines — use the enclosure ends
+        Tennis net up → drop net → futsal on full pad
       </text>
     </g>
   );
 }
 
 function AnimFence({ active, matProps }: SceneProps) {
+  /**
+   * Three clear sequential panels:
+   *  1) Set posts
+   *  2) Hang fabric + top rail
+   *  3) Gates + windscreen
+   */
   return (
     <g className={active ? "anim-fence" : undefined}>
-      {/* Court inside */}
-      <rect
-        x="70"
-        y="50"
-        width="260"
-        height="110"
-        fill="var(--color-primary)"
-        opacity=".12"
-      />
-      <MiniCourtLines x={90} y={65} w={220} h={80} opacity={0.5} />
+      <rect x="8" y="22" width="120" height="160" rx="8" fill="var(--color-card)" stroke="var(--color-border)" />
+      <rect x="140" y="22" width="120" height="160" rx="8" fill="var(--color-card)" stroke="var(--color-border)" />
+      <rect x="272" y="22" width="120" height="160" rx="8" fill="var(--color-card)" stroke="var(--color-border)" />
 
+      {[
+        { x: 18, n: "1" },
+        { x: 150, n: "2" },
+        { x: 282, n: "3" },
+      ].map((s) => (
+        <g key={s.n}>
+          <circle cx={s.x + 8} cy={34} r="8" fill="var(--color-primary)" className="anim-pop" />
+          <text
+            x={s.x + 8}
+            y={37}
+            textAnchor="middle"
+            fill="var(--color-primary-foreground)"
+            fontSize="9"
+            fontFamily="var(--font-sans)"
+            fontWeight="700"
+          >
+            {s.n}
+          </text>
+        </g>
+      ))}
+
+      {/* ── Panel 1: posts only ── */}
       <g {...matProps("fence")}>
-        {/* Posts rising */}
-        {[60, 100, 140, 180, 220, 260, 300, 340].map((x, i) => (
+        {[28, 48, 68, 88, 108].map((x, i) => (
           <rect
             key={x}
-            x={x - 3}
-            y={40}
-            width="6"
-            height="140"
+            x={x - 2}
+            y={48}
+            width="4"
+            height="80"
             fill="var(--color-wall)"
-            className={i % 2 === 0 ? "anim-post-1" : "anim-post-2"}
-            style={{ animationDelay: `${i * 0.06}s` }}
+            className="anim-post-1"
+            style={{ animationDelay: `${0.1 + i * 0.08}s` }}
           />
         ))}
-        {/* Top rail */}
+        {/* ground line */}
         <line
-          x1="60"
-          y1="42"
-          x2="340"
-          y2="42"
-          stroke="var(--color-wall)"
-          strokeWidth="4"
-          className="anim-rail-1"
-        />
-        {/* Fabric diamond hint */}
-        <path
-          d="M70 50 l20 15 l-20 15 l20 15 l-20 15 l20 15 l-20 15 M100 50 l20 15 l-20 15 l20 15 l-20 15 l20 15 l-20 15"
-          fill="none"
-          stroke="var(--color-muted-foreground)"
-          strokeWidth="1.2"
-          className="anim-draw anim-delay-1"
-          opacity=".7"
-        />
-        <path
-          d="M300 50 l20 15 l-20 15 l20 15 l-20 15 l20 15 l-20 15 M330 50 l10 15 l-10 15 l10 15 l-10 15 l10 15 l-10 15"
-          fill="none"
-          stroke="var(--color-muted-foreground)"
-          strokeWidth="1.2"
-          className="anim-draw anim-delay-1"
-          opacity=".7"
-        />
-      </g>
-
-      <g {...matProps("windscreen")}>
-        <rect
-          x="65"
-          y="55"
-          width="18"
-          height="100"
-          fill="var(--color-pipe)"
-          opacity=".75"
-          className="anim-fade-in anim-delay-2"
-        />
-        <rect
-          x="317"
-          y="55"
-          width="18"
-          height="100"
-          fill="var(--color-pipe)"
-          opacity=".75"
-          className="anim-fade-in anim-delay-2"
+          x1="20"
+          y1="128"
+          x2="116"
+          y2="128"
+          stroke="var(--color-hill)"
+          strokeWidth="3"
         />
         <text
-          x="200"
-          y="175"
+          x="68"
+          y="145"
           textAnchor="middle"
-          fill="var(--color-pipe)"
+          fill="var(--color-foreground)"
           fontSize="9"
           fontFamily="var(--font-sans)"
-          className="anim-fade-in anim-delay-2"
+          fontWeight="600"
         >
-          windscreen · leave bottom gap
+          Set posts
+        </text>
+        <text
+          x="68"
+          y="158"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+        >
+          terminals + line posts
         </text>
       </g>
 
-      <g {...matProps("gate-s")}>
-        <rect
-          x="175"
-          y="155"
-          width="50"
-          height="20"
-          rx="2"
-          fill="none"
-          stroke="var(--color-accent)"
-          strokeWidth="2"
-          className="anim-pop anim-delay-2"
+      {/* ── Panel 2: fabric + top rail ── */}
+      <g {...matProps("fence")}>
+        {[160, 180, 200, 220, 240].map((x, i) => (
+          <rect
+            key={x}
+            x={x - 2}
+            y={48}
+            width="4"
+            height="80"
+            fill="var(--color-wall)"
+            opacity="0.85"
+          />
+        ))}
+        {/* top rail */}
+        <line
+          x1="156"
+          y1="50"
+          x2="244"
+          y2="50"
+          stroke="var(--color-wall)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          className="anim-rail-1"
+        />
+        {/* chain-link fabric between posts — clean diamond grid, clipped */}
+        <g className="anim-fade-in anim-delay-1">
+          <rect
+            x="158"
+            y="54"
+            width="84"
+            height="70"
+            fill="none"
+            stroke="var(--color-muted-foreground)"
+            strokeWidth="0.8"
+            opacity="0.35"
+          />
+          {/* simple X lattice rows */}
+          {[58, 70, 82, 94, 106, 118].map((y) => (
+            <line
+              key={`h${y}`}
+              x1="160"
+              y1={y}
+              x2="240"
+              y2={y}
+              stroke="var(--color-muted-foreground)"
+              strokeWidth="0.9"
+              opacity="0.55"
+            />
+          ))}
+          {[164, 176, 188, 200, 212, 224, 236].map((x) => (
+            <line
+              key={`v${x}`}
+              x1={x}
+              y1="56"
+              x2={x}
+              y2="122"
+              stroke="var(--color-muted-foreground)"
+              strokeWidth="0.9"
+              opacity="0.45"
+            />
+          ))}
+        </g>
+        <line
+          x1="152"
+          y1="128"
+          x2="248"
+          y2="128"
+          stroke="var(--color-hill)"
+          strokeWidth="3"
         />
         <text
           x="200"
-          y="169"
+          y="145"
           textAnchor="middle"
-          fill="var(--color-accent)"
+          fill="var(--color-foreground)"
+          fontSize="9"
+          fontFamily="var(--font-sans)"
+          fontWeight="600"
+          className="anim-fade-in anim-delay-1"
+        >
+          Fabric + top rail
+        </text>
+        <text
+          x="200"
+          y="158"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
           fontSize="8"
           fontFamily="var(--font-sans)"
+        >
+          hang chain-link mesh
+        </text>
+      </g>
+
+      {/* ── Panel 3: gate + windscreen ── */}
+      <g>
+        {/* posts */}
+        {[292, 312, 332, 352, 372].map((x) => (
+          <rect
+            key={x}
+            x={x - 2}
+            y={48}
+            width="4"
+            height="80"
+            fill="var(--color-wall)"
+            opacity="0.75"
+          />
+        ))}
+        <line
+          x1="288"
+          y1="50"
+          x2="376"
+          y2="50"
+          stroke="var(--color-wall)"
+          strokeWidth="3"
+        />
+        {/* fabric ghost */}
+        <rect
+          x="290"
+          y="54"
+          width="80"
+          height="70"
+          fill="var(--color-muted-foreground)"
+          opacity="0.12"
+        />
+        {/* windscreen panels on sides */}
+        <g {...matProps("windscreen")}>
+          <rect
+            x="292"
+            y="56"
+            width="14"
+            height="66"
+            fill="var(--color-pipe)"
+            opacity="0.9"
+            className="anim-fade-in anim-delay-1"
+          />
+          <rect
+            x="358"
+            y="56"
+            width="14"
+            height="66"
+            fill="var(--color-pipe)"
+            opacity="0.9"
+            className="anim-fade-in anim-delay-1"
+          />
+          {/* bottom gap */}
+          <line
+            x1="292"
+            y1="122"
+            x2="306"
+            y2="122"
+            stroke="var(--color-background)"
+            strokeWidth="3"
+          />
+        </g>
+        {/* gate in center */}
+        <g {...matProps("gate-s")}>
+          <rect
+            x="318"
+            y="70"
+            width="28"
+            height="54"
+            rx="2"
+            fill="var(--color-card)"
+            stroke="var(--color-accent)"
+            strokeWidth="2.5"
+            className="anim-pop anim-delay-2"
+          />
+          <circle
+            cx="340"
+            cy="98"
+            r="2.5"
+            fill="var(--color-accent)"
+            className="anim-pop anim-delay-2"
+          />
+          <text
+            x="332"
+            y="100"
+            textAnchor="middle"
+            fill="var(--color-accent)"
+            fontSize="7"
+            fontFamily="var(--font-sans)"
+            className="anim-fade-in anim-delay-2"
+          >
+            gate
+          </text>
+        </g>
+        <line
+          x1="284"
+          y1="128"
+          x2="380"
+          y2="128"
+          stroke="var(--color-hill)"
+          strokeWidth="3"
+        />
+        <text
+          x="332"
+          y="145"
+          textAnchor="middle"
+          fill="var(--color-foreground)"
+          fontSize="9"
+          fontFamily="var(--font-sans)"
+          fontWeight="600"
           className="anim-fade-in anim-delay-2"
         >
-          gate
+          Gate + windscreen
+        </text>
+        <text
+          x="332"
+          y="158"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+        >
+          leave bottom air gap
         </text>
       </g>
 
       <text
         x="200"
-        y="210"
+        y="208"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
         fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Posts → fabric → top rail → gates → windscreen
+        Posts → fabric & rail → gates & windscreen
       </text>
     </g>
   );
