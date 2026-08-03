@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CourtSurface } from "@/lib/court-calc";
+import { SURFACE_LOOK } from "@/lib/court-calc";
 import { MATERIAL_LABELS } from "@/lib/material-images";
 import { MaterialThumb } from "@/components/material-thumb";
 import { cn } from "@/lib/utils";
@@ -193,12 +194,16 @@ function MiniCourtLines({
   w,
   h,
   opacity = 1,
+  line = "var(--color-foreground)",
+  net = "var(--color-accent)",
 }: {
   x: number;
   y: number;
   w: number;
   h: number;
   opacity?: number;
+  line?: string;
+  net?: string;
 }) {
   const alley = h * (4.5 / 36);
   const netX = x + w / 2;
@@ -206,7 +211,7 @@ function MiniCourtLines({
   const sR = x + w * (60 / 78);
   const midY = y + h / 2;
   return (
-    <g opacity={opacity} stroke="var(--color-foreground)" fill="none">
+    <g opacity={opacity} stroke={line} fill="none">
       <rect x={x} y={y} width={w} height={h} strokeWidth={1.5} />
       <line x1={x} y1={y + alley} x2={x + w} y2={y + alley} strokeWidth={1} />
       <line
@@ -224,7 +229,7 @@ function MiniCourtLines({
         y1={y - 2}
         x2={netX}
         y2={y + h + 2}
-        stroke="var(--color-accent)"
+        stroke={net}
         strokeWidth={2}
       />
     </g>
@@ -585,9 +590,12 @@ function AnimCourtSurface({
   matProps,
   surface,
 }: SceneProps & { surface: CourtSurface }) {
+  const look = SURFACE_LOOK[surface];
+
   if (surface === "modular") {
     return (
       <g className={active ? "anim-surface" : undefined}>
+        <rect x="45" y="40" width="310" height="120" fill={look.runback} rx="2" />
         <g {...matProps("modular")}>
           {Array.from({ length: 6 }).map((_, row) =>
             Array.from({ length: 10 }).map((_, col) => (
@@ -598,8 +606,10 @@ function AnimCourtSurface({
                 width="28"
                 height="20"
                 rx="2"
-                fill="var(--color-primary)"
-                opacity={0.35 + ((row + col) % 3) * 0.12}
+                fill={look.playInner}
+                stroke="#1A5C32"
+                strokeWidth="0.7"
+                opacity={0.82 + ((row + col) % 3) * 0.06}
                 className="anim-pop"
                 style={{ animationDelay: `${(row * 10 + col) * 0.03}s` }}
               />
@@ -607,18 +617,14 @@ function AnimCourtSurface({
           )}
         </g>
         <g {...matProps("lines")}>
-          <MiniCourtLines x={80} y={55} w={240} h={100} />
-          <text
-            x="200"
-            y="175"
-            textAnchor="middle"
-            fill="var(--color-foreground)"
-            fontSize="9"
-            fontFamily="var(--font-sans)"
-            className="anim-fade-in anim-delay-2"
-          >
-            snap chalk → lay tiles → strike lines
-          </text>
+          <MiniCourtLines
+            x={80}
+            y={55}
+            w={240}
+            h={100}
+            line={look.line}
+            net={look.net}
+          />
         </g>
         <text
           x="200"
@@ -628,7 +634,7 @@ function AnimCourtSurface({
           fontSize="11"
           fontFamily="var(--font-sans)"
         >
-          Modular sport tiles · multi-sport ready
+          Green PP sport tiles · white lines
         </text>
       </g>
     );
@@ -643,19 +649,29 @@ function AnimCourtSurface({
             y="50"
             width="300"
             height="110"
-            fill="var(--color-turf)"
-            opacity=".55"
+            fill={look.play}
             className="anim-turf-roll"
           />
-          {/* roll cylinder */}
           <rect
             x="50"
             y="50"
             width="24"
             height="110"
-            fill="var(--color-turf-deep)"
+            fill={look.playInner}
             className="anim-roll-cyl"
           />
+          {Array.from({ length: 16 }).map((_, i) => (
+            <line
+              key={i}
+              x1={75 + i * 16}
+              y1="58"
+              x2={78 + i * 16}
+              y2="152"
+              stroke={look.playInner}
+              strokeWidth="1.4"
+              opacity="0.4"
+            />
+          ))}
         </g>
         <g {...matProps("infill")}>
           {[70, 100, 130, 160, 190, 220, 250, 280, 310].map((x, i) => (
@@ -669,20 +685,16 @@ function AnimCourtSurface({
               style={{ animationDelay: `${0.3 + i * 0.05}s` }}
             />
           ))}
-          <text
-            x="200"
-            y="150"
-            textAnchor="middle"
-            fill="var(--color-muted-foreground)"
-            fontSize="8"
-            fontFamily="var(--font-sans)"
-            className="anim-fade-in anim-delay-2"
-          >
-            brush silica infill
-          </text>
         </g>
         <g {...matProps("lines")}>
-          <MiniCourtLines x={80} y={60} w={240} h={90} />
+          <MiniCourtLines
+            x={80}
+            y={60}
+            w={240}
+            h={90}
+            line={look.line}
+            net={look.net}
+          />
         </g>
         <text
           x="200"
@@ -692,7 +704,7 @@ function AnimCourtSurface({
           fontSize="11"
           fontFamily="var(--font-sans)"
         >
-          Roll turf · seam · infill · paint/inlay lines
+          Short-pile turf · natural green · chalk lines
         </text>
       </g>
     );
@@ -701,58 +713,46 @@ function AnimCourtSurface({
   // acrylic
   return (
     <g className={active ? "anim-surface" : undefined}>
-      <rect
-        x="50"
-        y="50"
-        width="300"
-        height="110"
-        fill="#3A3A40"
-        opacity=".5"
-      />
+      <rect x="50" y="50" width="300" height="110" fill={look.runback} />
       <g {...matProps("acrylic")}>
         <rect
-          x="50"
-          y="50"
-          width="300"
-          height="110"
-          fill="var(--color-primary)"
-          opacity=".45"
+          x="70"
+          y="60"
+          width="260"
+          height="90"
+          fill={look.play}
           className="anim-layer-1"
         />
         <rect
-          x="50"
-          y="50"
-          width="300"
-          height="110"
-          fill="#3B6EA5"
-          opacity=".55"
+          x="70"
+          y="72"
+          width="260"
+          height="66"
+          fill={look.playInner}
+          opacity="0.28"
           className="anim-layer-2"
         />
         <text
           x="200"
           y="100"
           textAnchor="middle"
-          fill="#fff"
+          fill={look.line}
           fontSize="10"
           fontFamily="var(--font-sans)"
           className="anim-fade-in anim-delay-1"
         >
-          resurfacer → color coats
+          resurfacer → blue color coats
         </text>
       </g>
       <g {...matProps("lines")}>
-        <MiniCourtLines x={80} y={60} w={240} h={90} />
-        <text
-          x="200"
-          y="175"
-          textAnchor="middle"
-          fill="var(--color-foreground)"
-          fontSize="9"
-          fontFamily="var(--font-sans)"
-          className="anim-fade-in anim-delay-2"
-        >
-          strike regulation lines last
-        </text>
+        <MiniCourtLines
+          x={80}
+          y={60}
+          w={240}
+          h={90}
+          line={look.line}
+          net={look.net}
+        />
       </g>
       <text
         x="200"
@@ -762,7 +762,7 @@ function AnimCourtSurface({
         fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Acrylic hard court · classic tennis bounce
+        Acrylic · blue play / green runback
       </text>
     </g>
   );

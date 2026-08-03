@@ -148,6 +148,62 @@ export const SURFACE_OPTIONS: {
   },
 ];
 
+/**
+ * Realistic on-court colors for plan / live preview.
+ * Acrylic: US-club blue play + green runback · Modular: PP tile green grid · Turf: short-pile grass.
+ */
+export const SURFACE_LOOK: Record<
+  CourtSurface,
+  {
+    play: string;
+    playInner: string;
+    runback: string;
+    line: string;
+    net: string;
+    netPost: string;
+    fence: string;
+    label: string;
+    texture: "smooth" | "tile" | "pile";
+  }
+> = {
+  acrylic: {
+    // Hard-court acrylic: medium blue play, forest green out-of-play (common club finish)
+    play: "#3A7BC8",
+    playInner: "#4590D8",
+    runback: "#2A5C3A",
+    line: "#F7F7F2",
+    net: "#1A1A1C",
+    netPost: "#2C2C30",
+    fence: "#3D3D42",
+    label: "Acrylic · blue play / green runback",
+    texture: "smooth",
+  },
+  modular: {
+    // Sport-court PP tiles: vivid green modules with visible seams
+    play: "#2F9B55",
+    playInner: "#38A85F",
+    runback: "#248A48",
+    line: "#FFFFFF",
+    net: "#1A1A1C",
+    netPost: "#2C2C30",
+    fence: "#3D3D42",
+    label: "Modular · green sport tiles",
+    texture: "tile",
+  },
+  turf: {
+    // Short-pile multi-sport turf: natural grass greens + chalk lines
+    play: "#4F9A45",
+    playInner: "#5AAB50",
+    runback: "#458A3C",
+    line: "#F4F4EE",
+    net: "#1A1A1C",
+    netPost: "#2C2C30",
+    fence: "#3D3D42",
+    label: "Turf · short-pile green",
+    texture: "pile",
+  },
+};
+
 const UNIT = {
   class2CuYd: 58,
   beddingCuYd: 72,
