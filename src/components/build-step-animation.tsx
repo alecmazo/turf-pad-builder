@@ -657,11 +657,17 @@ function AnimFrontWall({ active, matProps }: SceneProps) {
 function AnimBackWall({ active, matProps }: SceneProps) {
   return (
     <g className={active ? "anim-wall" : undefined}>
-      {/* Section: hillside/cut ← left · back wall · pad fill → right */}
-      <rect x="30" y="50" width="40" height="120" fill="var(--color-hill)" opacity=".7" />
+      {/*
+        Cross-section left → right:
+        hillside/cut | filter + drain rock + interceptor | SRW wall | pad
+        Drain package sits BEHIND the wall (cut side), not on the pad.
+      */}
+
+      {/* Hillside / native cut */}
+      <rect x="20" y="48" width="48" height="122" fill="var(--color-hill)" opacity=".75" />
       <text
-        x="50"
-        y="44"
+        x="44"
+        y="40"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
         fontSize="9"
@@ -669,212 +675,274 @@ function AnimBackWall({ active, matProps }: SceneProps) {
       >
         cut bank
       </text>
-      <rect
-        x="130"
-        y="78"
-        width="230"
-        height="82"
-        fill="var(--color-hill)"
-        opacity=".22"
-      />
-      <line
-        x1="130"
-        y1="82"
-        x2="360"
-        y2="86"
-        stroke="var(--color-turf-deep)"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
+      <g className="anim-drip" fill="var(--color-drain)" opacity=".8">
+        <circle cx="40" cy="72" r="3" />
+        <circle cx="40" cy="92" r="3" />
+        <circle cx="40" cy="112" r="3" />
+      </g>
       <text
-        x="250"
-        y="72"
-        fill="var(--color-muted-foreground)"
-        fontSize="9"
+        x="44"
+        y="178"
+        textAnchor="middle"
+        fill="var(--color-drain)"
+        fontSize="8"
         fontFamily="var(--font-sans)"
       >
-        pad fill
+        hillside water
       </text>
 
-      <g {...matProps("srw")}>
-        <rect
-          x="70"
-          y="152"
-          width="50"
-          height="12"
-          fill="var(--color-muted-foreground)"
-          className="anim-rise"
-        />
-        <rect
-          x="74"
-          y="134"
-          width="42"
-          height="18"
-          fill="var(--color-wall)"
-          className="anim-block-1"
-        />
-        <rect
-          x="74"
-          y="116"
-          width="42"
-          height="18"
-          fill="var(--color-wall)"
-          className="anim-block-2"
-        />
-        <rect
-          x="74"
-          y="98"
-          width="42"
-          height="18"
-          fill="var(--color-wall)"
-          className="anim-block-3"
-        />
-        <rect
-          x="72"
-          y="86"
-          width="46"
-          height="12"
-          fill="#A8A298"
-          className="anim-block-4"
-        />
-      </g>
-
-      {/* Drain chimney on pad side of back wall — intercepts hillside seepage */}
-      <g {...matProps("drain-rock")}>
-        <rect
-          x="120"
-          y="86"
-          width="16"
-          height="74"
-          fill="var(--color-drain)"
-          opacity=".5"
-          className="anim-fade-in anim-delay-2"
-        />
-        {[96, 108, 120, 132, 144].map((y, i) => (
-          <circle key={i} cx={128} cy={y} r={2.2} fill="#A8B4BE" />
-        ))}
-        <text
-          x="128"
-          y="78"
-          textAnchor="middle"
-          fill="var(--color-drain)"
-          fontSize="8"
-          fontFamily="var(--font-sans)"
-        >
-          rock chimney
-        </text>
-      </g>
-
+      {/* Filter fabric wraps rock against the cut */}
       <g {...matProps("filter")}>
         <path
-          d="M118 86 L138 86 L138 160 L118 160"
+          d="M66 78 L66 162 L92 162 L92 78"
           fill="none"
           stroke="#2A2A2E"
           strokeWidth="2.5"
           strokeDasharray="3 2"
-          className="anim-draw anim-delay-1"
+          className="anim-draw"
         />
         <text
-          x="150"
-          y="100"
+          x="79"
+          y="72"
+          textAnchor="middle"
           fill="#2A2A2E"
-          fontSize="9"
+          fontSize="8"
           fontFamily="var(--font-sans)"
-          className="anim-fade-in anim-delay-2"
+          className="anim-fade-in"
         >
-          filter fabric
+          filter
         </text>
       </g>
 
-      {/* Interceptor perf: end-on in chimney, runs along back wall (into page) */}
+      {/* Drain-rock chimney BEHIND the wall (between cut and SRW) */}
+      <g {...matProps("drain-rock")}>
+        <rect
+          x="68"
+          y="80"
+          width="22"
+          height="80"
+          fill="var(--color-drain)"
+          opacity=".55"
+          className="anim-fade-in anim-delay-1"
+        />
+        {[88, 100, 112, 124, 136, 148].map((y, i) => (
+          <circle
+            key={i}
+            cx={79}
+            cy={y}
+            r={2.4}
+            fill="#A8B4BE"
+            className="anim-fade-in anim-delay-1"
+          />
+        ))}
+        <text
+          x="79"
+          y="74"
+          textAnchor="middle"
+          fill="var(--color-drain)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-1"
+        >
+          drain rock
+        </text>
+        <text
+          x="79"
+          y="66"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="7"
+          fontFamily="var(--font-sans)"
+          className="anim-fade-in anim-delay-1"
+        >
+          behind wall
+        </text>
+      </g>
+
+      {/* Interceptor UNDER the drain rock — end-on, runs along wall */}
       <g {...matProps("perf")}>
         <circle
-          cx="128"
-          cy="148"
-          r="9"
+          cx="79"
+          cy="150"
+          r="10"
           fill="var(--color-pipe)"
           className="anim-pop anim-delay-2"
         />
         <circle
-          cx="128"
-          cy="148"
-          r="4"
+          cx="79"
+          cy="150"
+          r="4.5"
           fill="var(--color-background)"
           className="anim-pop anim-delay-2"
         />
         {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
-          const r = 6.5;
+          const r = 7;
           const a = (deg * Math.PI) / 180;
           return (
             <circle
               key={deg}
-              cx={128 + r * Math.cos(a)}
-              cy={148 + r * Math.sin(a)}
-              r={1.1}
+              cx={79 + r * Math.cos(a)}
+              cy={150 + r * Math.sin(a)}
+              r={1.2}
               fill="var(--color-success)"
               className="anim-pop anim-delay-2"
             />
           );
         })}
         <text
-          x="175"
-          y="172"
+          x="79"
+          y="178"
+          textAnchor="middle"
           fill="var(--color-drain)"
           fontSize="9"
           fontFamily="var(--font-sans)"
+          fontWeight="600"
           className="anim-fade-in anim-delay-2"
         >
-          4″ interceptor perf
+          4″ interceptor
         </text>
         <text
-          x="175"
-          y="183"
+          x="79"
+          y="189"
+          textAnchor="middle"
           fill="var(--color-muted-foreground)"
-          fontSize="8"
+          fontSize="7"
           fontFamily="var(--font-sans)"
           className="anim-fade-in anim-delay-2"
         >
-          along back wall · pitches to solid outlet
+          under rock · along wall
         </text>
       </g>
 
-      {/* Solid runs along the low end (left of pad in plan) — not under the pad depth */}
-      <g {...matProps("solid")}>
-        <path
-          d="M128 148 L128 175 L200 185"
-          fill="none"
-          stroke="var(--color-pipe)"
-          strokeWidth="6"
-          strokeLinecap="round"
-          className="anim-draw anim-delay-3"
-          opacity=".85"
+      {/* SRW wall — pad side of the drain package */}
+      <g {...matProps("srw")}>
+        <rect
+          x="92"
+          y="154"
+          width="48"
+          height="12"
+          fill="var(--color-muted-foreground)"
+          className="anim-rise"
+        />
+        <rect
+          x="96"
+          y="136"
+          width="40"
+          height="18"
+          fill="var(--color-wall)"
+          className="anim-block-1"
+        />
+        <rect
+          x="96"
+          y="118"
+          width="40"
+          height="18"
+          fill="var(--color-wall)"
+          className="anim-block-2"
+        />
+        <rect
+          x="96"
+          y="100"
+          width="40"
+          height="18"
+          fill="var(--color-wall)"
+          className="anim-block-3"
+        />
+        <rect
+          x="94"
+          y="88"
+          width="44"
+          height="12"
+          fill="#A8A298"
+          className="anim-block-4"
         />
         <text
-          x="210"
-          y="190"
+          x="116"
+          y="84"
+          textAnchor="middle"
+          fill="var(--color-muted-foreground)"
+          fontSize="8"
+          fontFamily="var(--font-sans)"
+        >
+          SRW
+        </text>
+      </g>
+
+      {/* Pad fill to the right of the wall — no pipe under turf */}
+      <rect
+        x="142"
+        y="88"
+        width="220"
+        height="78"
+        fill="var(--color-hill)"
+        opacity=".2"
+      />
+      <line
+        x1="142"
+        y1="90"
+        x2="360"
+        y2="94"
+        stroke="var(--color-turf-deep)"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <text
+        x="250"
+        y="80"
+        fill="var(--color-muted-foreground)"
+        fontSize="9"
+        fontFamily="var(--font-sans)"
+      >
+        pad (no pipe under turf)
+      </text>
+
+      {/* Solid outlet from low end of interceptor → side of pad */}
+      <g {...matProps("solid")}>
+        <path
+          d="M79 160 L79 195 L160 195"
+          fill="none"
+          stroke="var(--color-pipe)"
+          strokeWidth="7"
+          strokeLinecap="round"
+          className="anim-draw anim-delay-3"
+        />
+        <polygon
+          points="168,195 156,189 156,201"
           fill="var(--color-pipe)"
+          className="anim-fade-in anim-delay-3"
+        />
+        <text
+          x="175"
+          y="192"
+          fill="var(--color-pipe)"
+          fontSize="9"
+          fontFamily="var(--font-sans)"
+          fontWeight="600"
+          className="anim-fade-in anim-delay-3"
+        >
+          solid outlet
+        </text>
+        <text
+          x="175"
+          y="204"
+          fill="var(--color-muted-foreground)"
           fontSize="8"
           fontFamily="var(--font-sans)"
           className="anim-fade-in anim-delay-3"
         >
-          → solid outlet (side of pad)
+          along side of pad → daylight
         </text>
       </g>
 
-      <g className="anim-drip" fill="var(--color-drain)" opacity=".75">
-        <circle cx="50" cy="70" r="3" />
-        <circle cx="50" cy="90" r="3" />
-        <circle cx="50" cy="110" r="3" />
-      </g>
       <text
         x="200"
-        y="210"
+        y="218"
         textAnchor="middle"
         fill="var(--color-muted-foreground)"
         fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Hillside water → chimney → interceptor along wall
+        Cut → filter → rock + interceptor (behind wall) → solid out
       </text>
     </g>
   );
@@ -942,7 +1010,7 @@ function AnimDrainage({ active, matProps }: SceneProps) {
           fontSize="9"
           fontFamily="var(--font-sans)"
         >
-          interceptor · along back wall
+          interceptor · behind back wall
         </text>
         <text
           x="200"
@@ -1036,7 +1104,7 @@ function AnimDrainage({ active, matProps }: SceneProps) {
         fontSize="11"
         fontFamily="var(--font-sans)"
       >
-        Both perfs along walls → solid on side → daylight
+        Interceptor behind back · collector at front · solid on side
       </text>
     </g>
   );

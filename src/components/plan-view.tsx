@@ -12,8 +12,8 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
   const padW = 440;
   const padH = Math.max(160, Math.min(280, (depthFt / widthFt) * 440));
   const mx = 56;
-  const my = 40;
-  const rightLabel = 72;
+  const my = 52;
+  const rightLabel = 100;
   const svgW = padW + mx + rightLabel + 16;
   const svgH = padH + my + 100;
   const wallT = 14;
@@ -51,6 +51,44 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
           ↑ uphill / cut bank — water comes from here ↑
         </text>
 
+        {/* Drain rock + interceptor BEHIND the back wall (cut side) */}
+        <rect
+          x={leftX}
+          y={backY - 12}
+          width={padW}
+          height={10}
+          fill="var(--color-drain)"
+          opacity={0.35}
+          rx={1}
+        />
+        <line
+          x1={leftX + 4}
+          y1={backY - 7}
+          x2={rightX - 4}
+          y2={backY - 7}
+          stroke="var(--color-drain)"
+          strokeWidth={3}
+          strokeDasharray="6 4"
+        />
+        <text
+          x={rightX + 4}
+          y={backY - 4}
+          fill="var(--color-drain)"
+          fontSize={8}
+          fontFamily="var(--font-sans)"
+        >
+          interceptor (behind wall)
+        </text>
+        <text
+          x={leftX + 4}
+          y={backY - 14}
+          fill="var(--color-drain)"
+          fontSize={7}
+          fontFamily="var(--font-sans)"
+        >
+          drain rock + filter · cut side
+        </text>
+
         <rect
           x={leftX}
           y={backY}
@@ -68,25 +106,6 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
           fontFamily="var(--font-sans)"
         >
           BACK wall (cut) · {formatNumber(result.wallHeightFt, 1)} ft
-        </text>
-
-        <line
-          x1={leftX + 4}
-          y1={backY + wallT + 6}
-          x2={rightX - 4}
-          y2={backY + wallT + 6}
-          stroke="var(--color-drain)"
-          strokeWidth={3}
-          strokeDasharray="6 4"
-        />
-        <text
-          x={rightX + 4}
-          y={backY + wallT + 10}
-          fill="var(--color-drain)"
-          fontSize={8}
-          fontFamily="var(--font-sans)"
-        >
-          interceptor
         </text>
 
         <rect
@@ -152,26 +171,36 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
           fontSize={9}
           fontFamily="var(--font-sans)"
         >
-          ≈{result.pitchPct}% pitch → front · {result.fallInches}" fall
+          ≈{result.pitchPct}% pitch → front · {result.fallInches}" fall · no pipe under turf
         </text>
 
+        {/* Collector BEHIND front wall on fill side (pad side of front wall) */}
+        <rect
+          x={leftX}
+          y={frontY - wallT - 12}
+          width={padW}
+          height={10}
+          fill="var(--color-drain)"
+          opacity={0.3}
+          rx={1}
+        />
         <line
           x1={leftX + 4}
-          y1={frontY - wallT - 6}
+          y1={frontY - wallT - 7}
           x2={rightX - 4}
-          y2={frontY - wallT - 6}
+          y2={frontY - wallT - 7}
           stroke="var(--color-drain)"
           strokeWidth={3}
           strokeDasharray="6 4"
         />
         <text
           x={rightX + 4}
-          y={frontY - wallT - 2}
+          y={frontY - wallT - 3}
           fill="var(--color-drain)"
           fontSize={8}
           fontFamily="var(--font-sans)"
         >
-          collector
+          collector (fill side)
         </text>
 
         <rect
@@ -193,9 +222,10 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
           FRONT wall (holds {formatNumber(result.wallHeightFt, 1)} ft fill)
         </text>
 
+        {/* Solid outlet: ties both wall drains on the side — not under the pad */}
         <path
-          d={`M ${leftX - pipeW / 2} ${backY + wallT + 6}
-              L ${leftX - 22} ${backY + wallT + 6}
+          d={`M ${leftX - pipeW / 2} ${backY - 7}
+              L ${leftX - 22} ${backY - 7}
               L ${leftX - 22} ${frontY + 36}
               L ${leftX - 22} ${frontY + 48}`}
           fill="none"
@@ -203,6 +233,16 @@ export function PlanView({ widthFt, depthFt, result }: PlanViewProps) {
           strokeWidth={pipeW}
           strokeLinecap="round"
           strokeLinejoin="round"
+        />
+        {/* Tee from collector into solid */}
+        <line
+          x1={leftX}
+          y1={frontY - wallT - 7}
+          x2={leftX - 22}
+          y2={frontY - wallT - 7}
+          stroke="var(--color-pipe)"
+          strokeWidth={pipeW - 1}
+          strokeLinecap="round"
         />
         <polygon
           points={`${leftX - 22},${frontY + 58} ${leftX - 28},${frontY + 46} ${leftX - 16},${frontY + 46}`}

@@ -673,10 +673,12 @@ export function getBuildPhases(includeSideboards = true): BuildPhase[] {
       title: "Back wall (cut face)",
       steps: [
         "Leveling pad + SRW gravity wall into native cut",
-        "Drainage chimney on the pad side of the back wall",
-        '4" perforated interceptor at chimney base — runs along the back wall',
+        "Behind the wall (cut side): filter fabric against the hillside",
+        "12 in clean-rock chimney between the cut and the wall",
+        '4" perforated interceptor at the BASE of that rock — under the rock, along the wall',
+        "Not on the pad side — nothing runs under the turf pitch",
+        "Solid outlet leaves the low end of the interceptor along the side of the pad",
         "Geogrid usually none/minimal at 3 ft — check manufacturer chart",
-        "Both perfs pitch ~1% to the same side for the solid outlet",
       ],
     },
     {
