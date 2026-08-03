@@ -161,17 +161,18 @@ function CourtPlan({
   surface: CourtSurface;
 }) {
   /**
-   * Plan view — baseline ends left/right, net vertical at midcourt.
-   * Colors track the selected surface system in real time.
+   * Plan view with full dimension callouts — all regulation + pad measurements visible.
+   * Baseline ends left/right, net vertical at midcourt.
    */
   const look = SURFACE_LOOK[surface];
-  const W = 640;
-  const H = 400;
-  const mx = 48;
-  const my = 40;
-  const legendH = 36;
+  const W = 720;
+  const H = 520;
+  // Margins leave room for dimension strings on all four sides
+  const mx = 72;
+  const my = 56;
+  const bottomBand = 88;
   const padW = W - mx * 2;
-  const padH = H - my * 2 - legendH;
+  const padH = H - my - bottomBand;
 
   const scaleX = padW / lengthFt;
   const scaleY = padH / widthFt;
@@ -181,38 +182,120 @@ function CourtPlan({
   const playX = mx + (padW - playW) / 2;
   const playY = my + (padH - playH) / 2;
 
-  const toX = (ftFromLeftBaseline: number) => playX + ftFromLeftBaseline * scaleX;
+  const toX = (ftFromLeftBaseline: number) =>
+    playX + ftFromLeftBaseline * scaleX;
   const toY = (ftFromTopDoubles: number) => playY + ftFromTopDoubles * scaleY;
 
-  const alley = (FERN.playWidthFt - FERN.singlesWidthFt) / 2;
-  const netFt = FERN.playLengthFt / 2;
+  const alleyFt = (FERN.playWidthFt - FERN.singlesWidthFt) / 2; // 4.5
+  const netFt = FERN.playLengthFt / 2; // 39
   const serviceFromNet = 21;
-  const serviceFromBaseline = netFt - serviceFromNet;
+  const serviceFromBaseline = netFt - serviceFromNet; // 18
   const serviceLeftX = toX(serviceFromBaseline);
   const serviceRightX = toX(FERN.playLengthFt - serviceFromBaseline);
   const netX = toX(netFt);
-  const singlesTopY = toY(alley);
-  const singlesBotY = toY(FERN.playWidthFt - alley);
+  const singlesTopY = toY(alleyFt);
+  const singlesBotY = toY(FERN.playWidthFt - alleyFt);
   const midY = toY(FERN.playWidthFt / 2);
   const leftBaseX = playX;
   const rightBaseX = playX + playW;
   const topY = playY;
   const botY = playY + playH;
+  const padLeft = mx;
+  const padRight = mx + padW;
+  const padTop = my;
+  const padBot = my + padH;
+
+  const runbackEnd = (lengthFt - FERN.playLengthFt) / 2;
+  const runbackSide = (widthFt - FERN.playWidthFt) / 2;
 
   const line = look.line;
-  const lineSoft = "var(--color-muted-foreground)";
+  const dim = "var(--color-foreground)";
+  const dimSoft = "var(--color-muted-foreground)";
   const patternId = `surf-tex-${surface}`;
 
+  /** Dimension chain helper: horizontal tick + label between x1 and x2 at y */
+  function HDim({
+    x1,
+    x2,
+    y,
+    label,
+    color = dim,
+    tick = 5,
+  }: {
+    x1: number;
+    x2: number;
+    y: number;
+    label: string;
+    color?: string;
+    tick?: number;
+  }) {
+    const mid = (x1 + x2) / 2;
+    return (
+      <g stroke={color} fill={color}>
+        <line x1={x1} y1={y - tick} x2={x1} y2={y + tick} strokeWidth={1} />
+        <line x1={x2} y1={y - tick} x2={x2} y2={y + tick} strokeWidth={1} />
+        <line x1={x1} y1={y} x2={x2} y2={y} strokeWidth={1} />
+        <text
+          x={mid}
+          y={y - 4}
+          textAnchor="middle"
+          fill={color}
+          fontSize={9}
+          fontFamily="var(--font-mono)"
+          fontWeight={600}
+        >
+          {label}
+        </text>
+      </g>
+    );
+  }
+
+  function VDim({
+    y1,
+    y2,
+    x,
+    label,
+    color = dim,
+    tick = 5,
+  }: {
+    y1: number;
+    y2: number;
+    x: number;
+    label: string;
+    color?: string;
+    tick?: number;
+  }) {
+    const mid = (y1 + y2) / 2;
+    return (
+      <g stroke={color} fill={color}>
+        <line x1={x - tick} y1={y1} x2={x + tick} y2={y1} strokeWidth={1} />
+        <line x1={x - tick} y1={y2} x2={x + tick} y2={y2} strokeWidth={1} />
+        <line x1={x} y1={y1} x2={x} y2={y2} strokeWidth={1} />
+        <text
+          x={x - 6}
+          y={mid + 3}
+          textAnchor="middle"
+          fill={color}
+          fontSize={9}
+          fontFamily="var(--font-mono)"
+          fontWeight={600}
+          transform={`rotate(-90 ${x - 6} ${mid + 3})`}
+        >
+          {label}
+        </text>
+      </g>
+    );
+  }
+
   return (
-    <div className="w-full max-w-full overflow-x-auto">
+    <div className="w-full max-w-full space-y-3 overflow-x-auto">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="mx-auto h-auto w-full max-w-3xl transition-colors duration-300"
+        className="mx-auto h-auto w-full max-w-4xl transition-colors duration-300"
         role="img"
-        aria-label={`${look.label} tennis court plan with regulation markings`}
+        aria-label={`${look.label} tennis court plan with full dimensions`}
       >
         <defs>
-          {/* Modular tile grid */}
           <pattern
             id="surf-tex-modular"
             width="14"
@@ -235,7 +318,6 @@ function CourtPlan({
               opacity="0.45"
             />
           </pattern>
-          {/* Turf pile / grain */}
           <pattern
             id="surf-tex-turf"
             width="8"
@@ -257,7 +339,6 @@ function CourtPlan({
               opacity="0.5"
             />
           </pattern>
-          {/* Acrylic smooth with subtle roller texture */}
           <pattern
             id="surf-tex-acrylic"
             width="40"
@@ -280,8 +361,8 @@ function CourtPlan({
 
         {includeFence ? (
           <rect
-            x={mx - 10}
-            y={my - 10}
+            x={padLeft - 10}
+            y={padTop - 10}
             width={padW + 20}
             height={padH + 20}
             fill="none"
@@ -291,39 +372,17 @@ function CourtPlan({
           />
         ) : null}
 
-        {/* Overall pad / runback — surface-colored */}
+        {/* Overall pad / runback */}
         <rect
-          x={mx}
-          y={my}
+          x={padLeft}
+          y={padTop}
           width={padW}
           height={padH}
-          fill={`url(#runback-shade)`}
+          fill="url(#runback-shade)"
           rx={2}
         />
-        {/* Light outer edge wear */}
-        <rect
-          x={mx}
-          y={my}
-          width={padW}
-          height={padH}
-          fill="none"
-          stroke={look.play}
-          strokeWidth={1}
-          opacity={0.25}
-          rx={2}
-        />
-        <text
-          x={mx + 6}
-          y={my + 14}
-          fill="#F0F5F0"
-          fontSize={9}
-          fontFamily="var(--font-sans)"
-          opacity={0.9}
-        >
-          runback
-        </text>
 
-        {/* Playing surface fill with texture */}
+        {/* Playing surface */}
         <rect
           x={playX}
           y={playY}
@@ -331,7 +390,6 @@ function CourtPlan({
           height={playH}
           fill={`url(#${patternId})`}
         />
-        {/* Slight contrast on singles court (inner) for acrylic */}
         {surface === "acrylic" ? (
           <rect
             x={playX}
@@ -343,7 +401,7 @@ function CourtPlan({
           />
         ) : null}
 
-        {/* Doubles outer boundary */}
+        {/* Regulation lines */}
         <rect
           x={playX}
           y={playY}
@@ -353,8 +411,6 @@ function CourtPlan({
           stroke={line}
           strokeWidth={2.4}
         />
-
-        {/* Singles sidelines */}
         <line
           x1={leftBaseX}
           y1={singlesTopY}
@@ -371,8 +427,6 @@ function CourtPlan({
           stroke={line}
           strokeWidth={1.9}
         />
-
-        {/* Service lines */}
         <line
           x1={serviceLeftX}
           y1={singlesTopY}
@@ -389,8 +443,6 @@ function CourtPlan({
           stroke={line}
           strokeWidth={1.9}
         />
-
-        {/* Center service line */}
         <line
           x1={serviceLeftX}
           y1={midY}
@@ -399,8 +451,6 @@ function CourtPlan({
           stroke={line}
           strokeWidth={1.9}
         />
-
-        {/* Net */}
         <line
           x1={netX}
           y1={topY - 4}
@@ -412,8 +462,6 @@ function CourtPlan({
         />
         <circle cx={netX} cy={topY - 4} r={3.5} fill={look.netPost} />
         <circle cx={netX} cy={botY + 4} r={3.5} fill={look.netPost} />
-
-        {/* Center marks */}
         <line
           x1={leftBaseX}
           y1={midY}
@@ -431,49 +479,24 @@ function CourtPlan({
           strokeWidth={2.2}
         />
 
+        {/* Soft labels on court */}
         <text
           x={netX}
-          y={topY - 12}
+          y={topY - 10}
           textAnchor="middle"
           fill={look.net}
           fontSize={10}
           fontFamily="var(--font-sans)"
           fontWeight={600}
         >
-          net (removable)
+          net @ 39′
         </text>
-
-        <text
-          x={leftBaseX - 8}
-          y={midY + 4}
-          textAnchor="middle"
-          fill={line}
-          fontSize={9}
-          fontFamily="var(--font-sans)"
-          opacity={0.85}
-          transform={`rotate(-90 ${leftBaseX - 8} ${midY + 4})`}
-        >
-          baseline
-        </text>
-        <text
-          x={rightBaseX + 10}
-          y={midY + 4}
-          textAnchor="middle"
-          fill={line}
-          fontSize={9}
-          fontFamily="var(--font-sans)"
-          opacity={0.85}
-          transform={`rotate(90 ${rightBaseX + 10} ${midY + 4})`}
-        >
-          baseline
-        </text>
-
         <text
           x={(serviceLeftX + netX) / 2}
-          y={midY - 8}
+          y={midY - 6}
           textAnchor="middle"
           fill={line}
-          fontSize={9}
+          fontSize={8}
           fontFamily="var(--font-sans)"
           opacity={0.9}
         >
@@ -481,10 +504,10 @@ function CourtPlan({
         </text>
         <text
           x={(serviceLeftX + netX) / 2}
-          y={midY + 16}
+          y={midY + 14}
           textAnchor="middle"
           fill={line}
-          fontSize={9}
+          fontSize={8}
           fontFamily="var(--font-sans)"
           opacity={0.9}
         >
@@ -492,10 +515,10 @@ function CourtPlan({
         </text>
         <text
           x={(netX + serviceRightX) / 2}
-          y={midY - 8}
+          y={midY - 6}
           textAnchor="middle"
           fill={line}
-          fontSize={9}
+          fontSize={8}
           fontFamily="var(--font-sans)"
           opacity={0.9}
         >
@@ -503,103 +526,21 @@ function CourtPlan({
         </text>
         <text
           x={(netX + serviceRightX) / 2}
-          y={midY + 16}
+          y={midY + 14}
           textAnchor="middle"
           fill={line}
-          fontSize={9}
+          fontSize={8}
           fontFamily="var(--font-sans)"
           opacity={0.9}
         >
           ad
-        </text>
-
-        <text
-          x={toX(9)}
-          y={topY - 6}
-          textAnchor="middle"
-          fill={line}
-          fontSize={8}
-          fontFamily="var(--font-sans)"
-          opacity={0.8}
-        >
-          doubles alley
-        </text>
-
-        <text
-          x={serviceLeftX}
-          y={botY + 14}
-          textAnchor="middle"
-          fill={lineSoft}
-          fontSize={8}
-          fontFamily="var(--font-mono)"
-        >
-          service line
-        </text>
-        <text
-          x={serviceRightX}
-          y={botY + 14}
-          textAnchor="middle"
-          fill={lineSoft}
-          fontSize={8}
-          fontFamily="var(--font-mono)"
-        >
-          service line
-        </text>
-        <text
-          x={(leftBaseX + serviceLeftX) / 2}
-          y={botY + 14}
-          textAnchor="middle"
-          fill={lineSoft}
-          fontSize={8}
-          fontFamily="var(--font-mono)"
-        >
-          18′
-        </text>
-        <text
-          x={(serviceLeftX + netX) / 2}
-          y={botY + 14}
-          textAnchor="middle"
-          fill={lineSoft}
-          fontSize={8}
-          fontFamily="var(--font-mono)"
-        >
-          21′
-        </text>
-        <text
-          x={netX}
-          y={botY + 26}
-          textAnchor="middle"
-          fill={lineSoft}
-          fontSize={8}
-          fontFamily="var(--font-mono)"
-        >
-          78′ play · 36′ doubles · 27′ singles
-        </text>
-
-        <text
-          x={rightBaseX + 22}
-          y={singlesTopY + 4}
-          fill={lineSoft}
-          fontSize={8}
-          fontFamily="var(--font-mono)"
-        >
-          singles
-        </text>
-        <text
-          x={rightBaseX + 22}
-          y={topY + 10}
-          fill={lineSoft}
-          fontSize={8}
-          fontFamily="var(--font-mono)"
-        >
-          4.5′ alley
         </text>
 
         {showFutsalGoals ? (
           <>
             <rect
-              x={mx}
-              y={my}
+              x={padLeft}
+              y={padTop}
               width={padW}
               height={padH}
               fill="none"
@@ -609,54 +550,214 @@ function CourtPlan({
               opacity={0.9}
             />
             <rect
-              x={mx - (includeFence ? 12 : 6)}
-              y={my + padH / 2 - 18}
-              width={8}
-              height={36}
+              x={padLeft - (includeFence ? 12 : 6)}
+              y={padTop + padH / 2 - 16}
+              width={7}
+              height={32}
               fill="var(--color-success)"
-              opacity={0.95}
               rx={1}
             />
             <rect
-              x={mx + padW + (includeFence ? 4 : -2)}
-              y={my + padH / 2 - 18}
-              width={8}
-              height={36}
+              x={padRight + (includeFence ? 5 : -1)}
+              y={padTop + padH / 2 - 16}
+              width={7}
+              height={32}
               fill="var(--color-success)"
-              opacity={0.95}
               rx={1}
             />
-            <text
-              x={mx - 18}
-              y={my + padH / 2 + 4}
-              textAnchor="middle"
-              fill="var(--color-success)"
-              fontSize={8}
-              fontFamily="var(--font-sans)"
-              fontWeight={600}
-              transform={`rotate(-90 ${mx - 18} ${my + padH / 2 + 4})`}
-            >
-              futsal goal @ fence
-            </text>
-            <text
-              x={W / 2}
-              y={my + 12}
-              textAnchor="middle"
-              fill="#E8F8E8"
-              fontSize={9}
-              fontFamily="var(--font-sans)"
-              fontWeight={600}
-            >
-              futsal field = full pad · goals at fence ends
-            </text>
           </>
         ) : null}
 
-        {/* Surface legend chip */}
+        {/* ═══ DIMENSIONS ═══ */}
+
+        {/* Top: overall pad length */}
+        <HDim
+          x1={padLeft}
+          x2={padRight}
+          y={padTop - 22}
+          label={`overall pad ${formatNumber(lengthFt, 0)}′`}
+          color={dim}
+        />
+
+        {/* Below pad: play length 78′ + runbacks */}
+        <HDim
+          x1={padLeft}
+          x2={leftBaseX}
+          y={padBot + 16}
+          label={`${formatNumber(runbackEnd, 1)}′ runback`}
+          color={dimSoft}
+          tick={4}
+        />
+        <HDim
+          x1={leftBaseX}
+          x2={rightBaseX}
+          y={padBot + 16}
+          label={`play ${FERN.playLengthFt}′`}
+          color={dim}
+          tick={4}
+        />
+        <HDim
+          x1={rightBaseX}
+          x2={padRight}
+          y={padBot + 16}
+          label={`${formatNumber(runbackEnd, 1)}′ runback`}
+          color={dimSoft}
+          tick={4}
+        />
+
+        {/* Second chain under play: 18 | 21 | 21 | 18 */}
+        <HDim
+          x1={leftBaseX}
+          x2={serviceLeftX}
+          y={padBot + 34}
+          label="18′"
+          color={line}
+          tick={3}
+        />
+        <HDim
+          x1={serviceLeftX}
+          x2={netX}
+          y={padBot + 34}
+          label="21′"
+          color={line}
+          tick={3}
+        />
+        <HDim
+          x1={netX}
+          x2={serviceRightX}
+          y={padBot + 34}
+          label="21′"
+          color={line}
+          tick={3}
+        />
+        <HDim
+          x1={serviceRightX}
+          x2={rightBaseX}
+          y={padBot + 34}
+          label="18′"
+          color={line}
+          tick={3}
+        />
+
+        {/* Left outer: overall width */}
+        <VDim
+          y1={padTop}
+          y2={padBot}
+          x={padLeft - 28}
+          label={`overall ${formatNumber(widthFt, 0)}′`}
+          color={dim}
+        />
+
+        {/* Right of pad: play width stack */}
+        <VDim
+          y1={padTop}
+          y2={topY}
+          x={padRight + 18}
+          label={`${formatNumber(runbackSide, 1)}′`}
+          color={dimSoft}
+          tick={4}
+        />
+        <VDim
+          y1={topY}
+          y2={botY}
+          x={padRight + 18}
+          label={`doubles ${FERN.playWidthFt}′`}
+          color={dim}
+          tick={4}
+        />
+        <VDim
+          y1={botY}
+          y2={padBot}
+          x={padRight + 18}
+          label={`${formatNumber(runbackSide, 1)}′`}
+          color={dimSoft}
+          tick={4}
+        />
+
+        {/* Far right: singles + alleys inside play */}
+        <VDim
+          y1={topY}
+          y2={singlesTopY}
+          x={padRight + 40}
+          label={`alley ${formatNumber(alleyFt, 1)}′`}
+          color={line}
+          tick={3}
+        />
+        <VDim
+          y1={singlesTopY}
+          y2={singlesBotY}
+          x={padRight + 40}
+          label={`singles ${FERN.singlesWidthFt}′`}
+          color={line}
+          tick={3}
+        />
+        <VDim
+          y1={singlesBotY}
+          y2={botY}
+          x={padRight + 40}
+          label={`alley ${formatNumber(alleyFt, 1)}′`}
+          color={line}
+          tick={3}
+        />
+
+        {/* Baseline labels */}
+        <text
+          x={leftBaseX}
+          y={botY + 50}
+          textAnchor="middle"
+          fill={dimSoft}
+          fontSize={8}
+          fontFamily="var(--font-sans)"
+        >
+          baseline
+        </text>
+        <text
+          x={rightBaseX}
+          y={botY + 50}
+          textAnchor="middle"
+          fill={dimSoft}
+          fontSize={8}
+          fontFamily="var(--font-sans)"
+        >
+          baseline
+        </text>
+        <text
+          x={serviceLeftX}
+          y={botY + 50}
+          textAnchor="middle"
+          fill={dimSoft}
+          fontSize={8}
+          fontFamily="var(--font-sans)"
+        >
+          service
+        </text>
+        <text
+          x={serviceRightX}
+          y={botY + 50}
+          textAnchor="middle"
+          fill={dimSoft}
+          fontSize={8}
+          fontFamily="var(--font-sans)"
+        >
+          service
+        </text>
+        <text
+          x={netX}
+          y={botY + 50}
+          textAnchor="middle"
+          fill={look.net}
+          fontSize={8}
+          fontFamily="var(--font-sans)"
+          fontWeight={600}
+        >
+          net
+        </text>
+
+        {/* Legend chip */}
         <rect
-          x={W / 2 - 120}
+          x={W / 2 - 160}
           y={H - 28}
-          width={240}
+          width={320}
           height={18}
           rx={9}
           fill={look.play}
@@ -673,11 +774,61 @@ function CourtPlan({
           fontFamily="var(--font-sans)"
           fontWeight={600}
         >
-          {look.label} · {formatNumber(lengthFt, 0)}×{formatNumber(widthFt, 0)}
-          ft
+          {look.label}
           {includeFence ? ` · ${fenceHeightFt}′ fence` : ""}
+          {showFutsalGoals
+            ? ` · futsal ${formatNumber(lengthFt, 0)}×${formatNumber(widthFt, 0)}′`
+            : ""}
         </text>
       </svg>
+
+      {/* Dimension key — everything in one table */}
+      <div className="mx-auto grid w-full max-w-4xl gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs">
+          <p className="font-semibold text-foreground">Overall pad</p>
+          <p className="mt-0.5 font-mono tabular-nums text-muted-foreground">
+            {formatNumber(lengthFt, 0)}′ × {formatNumber(widthFt, 0)}′ ·{" "}
+            {formatNumber(lengthFt * widthFt, 0)} sq ft
+          </p>
+        </div>
+        <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs">
+          <p className="font-semibold text-foreground">Play (doubles)</p>
+          <p className="mt-0.5 font-mono tabular-nums text-muted-foreground">
+            {FERN.playLengthFt}′ × {FERN.playWidthFt}′ · ITF regulation
+          </p>
+        </div>
+        <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs">
+          <p className="font-semibold text-foreground">Singles width</p>
+          <p className="mt-0.5 font-mono tabular-nums text-muted-foreground">
+            {FERN.singlesWidthFt}′ · alleys {formatNumber(alleyFt, 1)}′ each side
+          </p>
+        </div>
+        <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs">
+          <p className="font-semibold text-foreground">Along length</p>
+          <p className="mt-0.5 font-mono tabular-nums text-muted-foreground">
+            18′ · 21′ · net · 21′ · 18′ (baseline→service→net)
+          </p>
+        </div>
+        <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs">
+          <p className="font-semibold text-foreground">Runback</p>
+          <p className="mt-0.5 font-mono tabular-nums text-muted-foreground">
+            Ends {formatNumber(runbackEnd, 1)}′ · sides{" "}
+            {formatNumber(runbackSide, 1)}′
+          </p>
+        </div>
+        <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs">
+          <p className="font-semibold text-foreground">
+            {showFutsalGoals ? "Futsal field" : "Fence"}
+          </p>
+          <p className="mt-0.5 font-mono tabular-nums text-muted-foreground">
+            {showFutsalGoals
+              ? `Full pad ${formatNumber(lengthFt, 0)}×${formatNumber(widthFt, 0)}′ · goals @ fence ends`
+              : includeFence
+                ? `${fenceHeightFt}′ chain-link · ${formatNumber(2 * (lengthFt + widthFt), 0)} lf perimeter`
+                : "No fence selected"}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
